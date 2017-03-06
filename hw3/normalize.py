@@ -147,13 +147,13 @@ def preprocess(raw_path, root, SETTING):
 	'''
 		make the encoding consistent with seq2seq
 	'''
-	w2idx_q['unk'] = 3
-	w2idx_q['the'] = 6002
-	w2idx_q['.']   = 6003
+	w2idx_q['unk'] = 3 # 1 -> 3
+	w2idx_q['.'] = 6002 # 2 -> 6002
+	w2idx_q['the']   = 6003 # 3 -> 6003
 
 	w2idx_a["unk"] = 3
-	w2idx_a["the"] = 6002
-	w2idx_a["."]   = 6003
+	w2idx_a["."] = 6002
+	w2idx_a["the"]   = 6003
 
 	pickle.dump(w2idx_q, open(w2idx_q_path,"wb"))
 	pickle.dump(w2idx_a, open(w2idx_a_path,"wb"))
