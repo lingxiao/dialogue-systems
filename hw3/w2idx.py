@@ -31,8 +31,8 @@ idx2w_a = dict((v,k) for k,v in w2idx_a.iteritems())
 '''
 # w2idx_q_len    = len(w2idx_q)
 w2idx_q['unk'] = 3
-w2idx_q['the'] = 6002
-w2idx_q['.']   = 6003
+w2idx_q['.'] = 6002
+w2idx_q['the']   = 6003
 
 # w2idx_a["unk"] = 3
 # w2idx_a["the"] = 6002
