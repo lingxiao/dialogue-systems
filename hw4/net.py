@@ -4,9 +4,10 @@
 # Author  : Xiao Ling  
 ############################################################
 
-# import tensorflow as tf
 import os
 import time
+import tensorflow as tf
+
 import prelude
 from utils import Tokenizer
 from utils import Emoji
@@ -17,7 +18,9 @@ from utils import Emoji
 '''
 
 
-
+'''
+	plan: run lstm once, examine output
+'''
 
 
 

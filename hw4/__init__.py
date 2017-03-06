@@ -1,5 +1,8 @@
-from .main    import *
-from .utils   import * 
-from .prelude import *
-from .net     import *
+from .preprocess import *
+from .net        import *
 
+__all__ = [ 'normalize'
+          , 'encode'
+          , 'save_encoded']
+
+ 

@@ -1,5 +1,5 @@
 ############################################################
-# Module  : homework4 - preprocess 
+# Module  : homework4 - preprocess data  
 # Date    : Febuary 28th
 # Author  : Xiao Ling  
 ############################################################
@@ -20,7 +20,7 @@ from utils import Emoji
 '''
 	preprocess
 '''
-def preprocess(data_path):
+def normalize(data_path):
 	'''
 		@Input : path/to/file-directory containing list of all phone home transcripts
 		@Output: a list of all conversations concactenated together, where
@@ -62,7 +62,7 @@ def preprocess(data_path):
 
 	print('\n >> normalizing text')
 	token  = Tokenizer(True, True)
-	normed = join([(t,normalize(token,r)) for t,r in rs] \
+	normed = join([(t,go_normalize(token,r)) for t,r in rs] \
 	         for rs in rounds)
 
 	print('\n >> renaming round names')
@@ -80,10 +80,6 @@ def preprocess(data_path):
 			norm.append(('response',xs))
 
 	return norm
-
-def pre_preprocess(convo):
-	return [' '.join(fold_gesture(strip_word_punc(t)) \
-		   for t in cs.split()) for cs in convo]
 
 def encode(data, SETTING):
 	'''
@@ -118,9 +114,17 @@ def encode(data, SETTING):
 	print('\n >> Zero Padding')
 	idx_q, idx_r = zero_pad( question, response, w2idx)
 
-	return idx_q, idx_r, idx2w, w2idx
+	return {'idx_q': idx_q \
+	       ,'idx_r': idx_r \
+	       ,'idx2w': idx2w \
+	       ,'w2idx': w2idx}
 
-def save(root, normalized, idx_q, idx_r, idx2w, w2idx):
+def save_encoded(root, normalized, encoded):
+
+	idx_q = encoded['idx_q']
+	idx_r = encoded['idx_r']
+	idx2w = encoded['idx2w'] 
+	w2idx = encoded['w2idx']
 
 	'''
 		path
@@ -155,7 +159,7 @@ def save(root, normalized, idx_q, idx_r, idx2w, w2idx):
 '''
 	Subrountines
 '''
-def normalize(token, rs):
+def go_normalize(token, rs):
 	'''
 		@Input: instance of tworkenizer `token`
 				a string `rs`
@@ -172,6 +176,10 @@ def normalize(token, rs):
 	ys = ' '.join(ts)
 	ys = ys.encode('utf-8')
 	return ys.strip()
+
+def pre_preprocess(convo):
+	return [' '.join(fold_gesture(strip_word_punc(t)) \
+		   for t in cs.split()) for cs in convo]
 
 def strip_word_punc(token):
 	'''
@@ -283,25 +291,6 @@ def pad_seq(seq, lookup, maxlen, SETTING):
 	    else:
 	        indices.append(lookup[SETTING['UNK']])
 	return indices + [0]*(maxlen - len(seq))
-
-############################################################
-'''
-	run 
-'''
-data_path = '/Users/lingxiao/Documents/research/dialogue-systems/data/phone-home'
-out_path  = '/Users/lingxiao/Documents/research/dialogue-systems/data/hw4'
-
-SETTING   = {'maxq'      : 500
-            ,'maxr'	     : 500
-            ,'UNK'       : 'unk'
-            ,'VOCAB_SIZE': 10000}
-
-
-normed    = preprocess(data_path)
-idx_q, idx_r, idx2w, w2idx = encode(normed, SETTING)
-save(out_path, normed, idx_q, idx_r, idx2w, w2idx)
-
-
 
 
 

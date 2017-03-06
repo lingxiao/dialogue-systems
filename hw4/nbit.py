@@ -1,7 +1,7 @@
 ############################################################
 # Module  : Seq to Seq
 # Date    : Febuary 24th, 2017
-# Author  : Xiao Ling  
+# source  : http://monik.in/a-noobs-guide-to-implementing-rnn-lstm-using-tensorflow/
 ############################################################
 
 import sys
