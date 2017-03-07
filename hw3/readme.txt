@@ -8,7 +8,12 @@ the remaining 10% is used for test set.
 
 Tokenization.
 
-We used two tokenization schemes, nltk's vanilla 
+We used two tokenization schemes, nltk's vanilla tokenization scheme, which includes:
+	- lowercase all tokens
+	- removing all non alphanumeric characters 
+
+and tworkenize found in tworkenize.py, this include:
+	-
 
 
 Model.
