@@ -1,4 +1,4 @@
-# Introduction.
+# INTRODUCTION
 
 In this project we trained a vanilla seq-to-seq model on the twitter chat log found here:
 https://github.com/suriyadeepan/datasets/tree/master/seq2seq/twitter. 
@@ -6,7 +6,7 @@ https://github.com/suriyadeepan/datasets/tree/master/seq2seq/twitter.
 After tokenization (details below), there were 220754 question-answer pairs, 90% of which was used for training set,
 the remaining 10% is used for test set.
 
-# Preprocessing.
+# PREPROCESSING
 
 We used two tokenization schemes. The first is nltk's vanilla tokenization scheme, which includes:
 
@@ -29,7 +29,7 @@ Finally, we removed any tweet questions-response pairs where the question is lon
 
 The vocabulary is limited to 6000 characters, all out of vocabulary (OOV) words are mapped to the token 'unk'.
 
-### MODELS ###
+# MODELS
 We used vanilla sequence to sequence model with attention mechanism, first proposed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation and is trained to maximize the probabilty of target sequence given input sequence, where the cost is cross entropy. The model maps in the input sequence into a hidden vector, where the attention mechanism controls how much hidden information will propogate forward.
 
 We utilized the orginial "translate.py" in the tensorflow repository written for French-English translation. All functions in the original file have been slightly modified for our twitter chatbot. In total, we trained three different models as follow:
@@ -38,7 +38,7 @@ We utilized the orginial "translate.py" in the tensorflow repository written for
 	- preprocessed with tworkenize.py & early stopping
 The total vocabulary size for both questions and answers is 6004 including the default special vocabulary used in Seq2Seq model (_PAD_, _UNK_, _GO_, _EOS_). We used four buckets with the following bucket sizes (question, answer)-pairs: [(5, 5), (10, 10), (15, 15), (25, 25)].
 
-### TEST RESULTS and DISCUSSION ###
+# TEST RESULTS and DISCUSSION 
 We tested each model with the same set of sentences including some sentences in the training data. The results are in the "results" folder. Detailed explanantions are denoted below.
 
 ## 1) Preprocessed with NLTK's Vanilla Tokenization scheme
