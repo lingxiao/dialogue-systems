@@ -1,4 +1,4 @@
-d# Introduction.
+# Introduction.
 
 In this project we trained a vanilla seq-to-seq model on the twitter chat log found here:
 https://github.com/suriyadeepan/datasets/tree/master/seq2seq/twitter. 
