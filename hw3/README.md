@@ -31,7 +31,7 @@ The vocabulary is limited to 6000 characters, all out of vocabulary (OOV) words 
 
 # Model.
 
-We used vanilla sequence to sequence model with attention mechanism, first proposed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation and is trained to maximize the probabilty of target sequence given input sequence, where the cost is cross entropy.
+We used vanilla sequence to sequence model with attention mechanism, first proposed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation and is trained to maximize the probabilty of target sequence given input sequence, where the cost is cross entropy. The model maps in the input sequence into a hidden vector, where the attention mechanism controls how much hidden information will propogate forward. 
 
 
 # Experiments.
