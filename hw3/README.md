@@ -12,7 +12,7 @@ We used two tokenization schemes. The first is nltk's vanilla tokenization schem
 	- lowercase all tokens
 	- removing all non alphanumeric characters.
 
-Note in the last case if a nonalphanumeric character appears inside of a word, then it is removed from the word. For example, w<rd becomes wrd. Punctuations are not removed.
+Note in the last case if a nonalphanumeric character appears inside of a word, then it is removed from the word. For example. Punctuations are not removed.
 
 
 Next we usedd tworkenize found in tworkenize.py, this include:
@@ -27,9 +27,9 @@ Finally, we removed any tweet questions-response pairs where the question is lon
 
 The vocabulary is limited to 6000 characters, all out of vocabulary (OOV) words are mapped to the token 'unk'.
 
-Model.
+# Model.
 
 
 
 
-Experiments.
+# Experiments.
