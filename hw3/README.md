@@ -30,6 +30,12 @@ The vocabulary is limited to 6000 characters, all out of vocabulary (OOV) words 
 # Model.
 
 
-
-
 # Experiments.
+
+## Experiment 1 : nltk with _ training episodes
+
+## Experiment 2 : tworkenize with _ training episodes
+
+
+## Experiment 2 : tworkenize with _ training episodes (early stopping)
+
