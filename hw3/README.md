@@ -47,57 +47,57 @@ We tested each model with the same set of sentences including some sentences in 
 - Perplexity at the stopping point: 
 	- Global: 27.09
 	- Buckets: 122.35, 72.53, 70.51, 87.10
-- Reuslt files:
+- Result files:
 	"nltk_107600.txt"
 	"nltk_107600.png" (Just screenshot image)
-: The global perplexity and the buckets' perplexities except the first one decreased as the steps increased, but the first bucket's perplexity decreased at the beginning and increased later. In the results, "unk" appears many times, even for the sentences in the training data. We believe this is due insufficient tokenization. Below is an example from the nltk model.
+
+The global perplexity and the buckets' perplexities except the first one decreased as the steps increased, but the first bucket's perplexity decreased at the beginning and increased later. In the results, "unk" appears many times, even for the sentences in the training data. We believe this is due insufficient tokenization. Below is an example from the nltk model.
 
 <pre>
-> Have a great day
-thank you unk
-> It is raining today
-unk on unk
-> Trump got elected as the president of the united states
-unk is the unk unk unk unk
-> It is finally Friday
-its unk unk
-> yeah i'm preparing myself to drop a lot on this man, but definitely need something reliable
-unk unk unk unk unk unk
-> magic's biggest secrets finally revealed on netflix
-unk to get a unk unk
-> just standing up for my friends yo
-unk u unk bro
-> besides if trump say his condolences it won't sound genuine
-so unk so true
-> I am okay with that
-im sorry to unk
-> I love my dad
-fucking fucking unk
-> I love my mom
-whats the unk
-> she is back
-she is unk
-> idk
-unk unk unk
-> idk im just trying to help other people
-i live to unk
-> what's a good place to get free beats?
-its unk to unk
-> let's work
-unk that unk
-> goddamit that degrom image is so good i hope i never lose it
-try here on the unk unk
-> you are so sweet.
-thank you so much
->
-unk unk unk
-> couldn't help myself
-unk unk unk
-> if i'm being totally honest, i went far out of my way for this one
-i like the same party unk
-> my sister say she ready for me
-lmao yall unk me
-
+	> Have a great day
+	thank you unk
+	> It is raining today
+	unk on unk
+	> Trump got elected as the president of the united states
+	unk is the unk unk unk unk
+	> It is finally Friday
+	its unk unk
+	> yeah i'm preparing myself to drop a lot on this man, but definitely need something reliable
+	unk unk unk unk unk unk
+	> magic's biggest secrets finally revealed on netflix
+	unk to get a unk unk
+	> just standing up for my friends yo
+	unk u unk bro
+	> besides if trump say his condolences it won't sound genuine
+	so unk so true
+	> I am okay with that
+	im sorry to unk
+	> I love my dad
+	fucking fucking unk
+	> I love my mom
+	whats the unk
+	> she is back
+	she is unk
+	> idk
+	unk unk unk
+	> idk im just trying to help other people
+	i live to unk
+	> what's a good place to get free beats?
+	its unk to unk
+	> let's work
+	unk that unk
+	> goddamit that degrom image is so good i hope i never lose it
+	try here on the unk unk
+	> you are so sweet.
+	thank you so much
+	>
+	unk unk unk
+	> couldn't help myself
+	unk unk unk
+	> if i'm being totally honest, i went far out of my way for this one
+	i like the same party unk
+	> my sister say she ready for me
+	lmao yall unk me
 </pre>	
 
 
@@ -107,10 +107,67 @@ lmao yall unk me
 - Perplexity at the stopping point: 
 	- Global: 1.11
 	- Buckets: 2627.52, 16880.32, 43720.34, 24863.28
-- Reuslt files:
+- Result files:
 	"tworken_128200.txt"
-	"tworken_128200.png" (Just screenshot image)
-: The global perplexity decreased up to 1.11 by the time we stopped training. However, each bucket's perplextiy kept increasing and became very large. Therefore, we trained another model stopping early - the third model. In terms of its result, it works better than the vanila tokenization case. Most of the answers do not completely make sense, but it generates less "unk" and more relevant words.
+	"tworken_128200.png" 
+
+Note total perplexity score over all buckets dropped to as far as 1.11. However, each bucket's perplextiy kept increasing and eventually became very large. Be that as it may, this model performs qualitatively better than the one trained on the previously tokenized dataset. In particular we observe far less "unk" tokens, and the responses appear more related to the question. 
+
+<pre>
+	> Have a great day
+	unk your unk
+	> It is raining today
+	yo unk .
+	> Trump got elected as the president of the united states
+	unk because i heard . so am always unk of the light .
+	> It is finally Friday
+	stay ready b
+	> yeah i'm preparing myself to drop a lot on this man, but definitely need something reliable
+	eh . i saw this unk . good seeing jimmy .
+	> magic's biggest secrets finally revealed on netflix
+	she's a unk in the red store
+	> just standing up for my friends yo
+	i can help her way .
+	> besides if trump say his condolences it won't sound genuine
+	nope . she truly might end his unk .
+	> I am okay with that
+	the best game .
+	> I love my dad
+	i cant wait
+	> I love my mom
+	i love this
+	> she is back
+	unk is bae
+	> idk
+	aw .
+	>  idk im just trying to help other people
+	i'm going attention in the way .
+	> what's a good place to get free beats?
+	like what the unk works
+	> let's work
+	work . thanks
+	> goddamit that degrom image is so good i hope i never lose it
+	what unk help
+	> you are so sweet.
+	thank you dear !!!!!!
+	> couldn't help myself
+	the best answer .
+	> if i'm being totally honest, i went far out of my way for this one
+	you know your unk .
+	> my sister say she ready for me
+	allowed the type
+	> hello
+	the last rapper
+	> whos the last rapper?
+	yeah . unk
+	> you mad bro?
+	yeah my number
+	> I wonder what donald trump did when he was my age
+	i thought it was a bitch .
+	> i agree with that
+	good question .	
+</pre>	
+
 
 ## 3) Preprocessed with tworkenize.py & early stopping
 - learning rate: 0.5
@@ -118,12 +175,66 @@ lmao yall unk me
 - Perplexity at the stopping point:
 	- Global: 25.12
 	- Buckets: 49.00, 48.75, 79.21, 92.70
-- Reuslt files:
+- Result files:
 	"tworken_earlystopping_27000.txt"
 	"tworken_earlystopping_27000.png" (Just screenshot image)
-: The global perplexity at the stopping point of this model is higher than the one of the previous model. All buckets' perplexities of this model are much lower than the ones of the previous model. In the test results, the model generated "unk" more times than the first model. We didn't evaluated the results with a certain metrics, but this model's result apparently showed the worst performance among the three models.
 
+The global perplexity at the stopping point of this model is higher than the one of the previous model. All buckets' perplexities of this model are much lower than the ones of the previous model. In the test results, the model generated "unk" more times than the first model. We didn't evaluated the results with a certain metrics, but this model's result apparently showed the worst performance among the three models.
 
+<pre>
+	> Have a great day
+	what unk unk
+	> It is raining today
+	unk unk unk
+	> Trump got elected as the president of the united states
+	unk unk unk unk unk unk unk unk unk unk unk unk
+	> It is finally Friday
+	that's unk unk
+	> yeah i'm preparing myself to drop a lot on this man, but definitely need something reliable
+	well i was thinking about this one of the unk unk
+	> magic's biggest secrets finally revealed on netflix
+	that's what i was thinking
+	> just standing up for my friends yo
+	thanks unk unk
+	> besides if trump say his condolences it won't sound genuine
+	unk unk unk unk unk unk unk unk unk unk unk
+	> I am okay with that
+	unk unk unk
+	> I love my dad
+	you're so unk
+	> I love my mom
+	my unk unk
+	> she is back
+	unk unk unk
+	> idk
+	unk unk unk
+	> idk im just trying to help other people
+	what i was talking about
+	> what's a good place to get free beats?
+	i unk unk
+	> let's work
+	thanks for unk
+	> goddamit that degrom image is so good i hope i never lose it
+	i can't wait to see unk unk
+	> you are so sweet.
+	thank you unk !
+	> couldn't help myself
+	unk unk unk
+	> if i'm being totally honest, i went far out of my way for this one
+	unk unk unk unk
+	> my sister say she ready for me
+	lol you know she got it
+	> hello
+	unk unk unk
+	> whos the last rapper?
+	unk unk unk
+	> you mad bro?
+	no right bro
+	>  I wonder what donald trump did when he was my age
+	i can't believe he was unk
+	> i agree with that
+	you're right .	
+</pre>	
 
 ## FUTURE WORK ##
 
