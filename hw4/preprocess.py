@@ -13,8 +13,7 @@ import itertools
 from collections import defaultdict
 
 import prelude
-from utils import Tokenizer
-from utils import Emoji
+from utils import *
 
 ############################################################
 '''
