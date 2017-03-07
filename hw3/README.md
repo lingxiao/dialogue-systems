@@ -31,6 +31,8 @@ The vocabulary is limited to 6000 characters, all out of vocabulary (OOV) words 
 
 # Model.
 
+We used vanilla seq-to-seq model designed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation, 
+
 
 # Experiments.
 
