@@ -7,7 +7,7 @@
 import os
 import time
 import numpy as np
-# import tensorflow as tf
+import tensorflow as tf
 
 import app
 from prelude import *
@@ -25,7 +25,7 @@ from utils import *
 		Pr[Yt = 1 | X_{t-3} = 1 and X_{t-8} = 1] = 0.75
 
 '''
-def data(size):
+def to_data(size):
 
 	X = [np.random.choice([0,1], p = [0.5,0.5]) for _ in range(size)]
 	Y = []
@@ -48,46 +48,38 @@ def data(size):
 
 	return X,Y
 
-X,Y = data(5000)
+def to_batches(data,CONFIG):
 
-'''	
-	break data into batches
-'''
-batch_size = CONFIG['batch-size']
+	'''	
+		break data into batches
+		where each batch is of length
+		batch_len
+	'''
+	X,Y        = data
+	batch_size = CONFIG['batch-size']
 
-batch_len = len(X) // batch_size
-x_batchs  = list(chunks(X,batch_len))
-y_batchs  = list(chunks(Y,batch_len))
+	batch_len = len(X) // batch_size
+	x_batchs  = list(chunks(X,batch_len))
+	y_batchs  = list(chunks(Y,batch_len))
 
-'''
-	divide again into minibatches for
-	truncated backprop
-'''
-epoch_size = batch_len // CONFIG['num-steps']
+	'''
+		divide again into minibatches for
+		truncated backprop
+	'''
+	num_steps  = CONFIG['num-steps']
+	num_epochs = batch_len // num_steps
+	ranges     = [(e * num_steps, (e+1)*num_steps) for e in range(num_epochs)]
 
-num_steps = CONFIG['num-steps']
-raw_x, raw_y = X,Y
-data_length = len(raw_x)
+	xss        = [[x[s:t] for x in x_batchs] for s,t in ranges]
+	yss        = [[y[s:t] for y in y_batchs] for s,t in ranges]
+	batches    = zip(xss,yss)
+	batches    = [zip(xs,ys) for xs,ys in batches]
 
-# partition raw data into batches and stack them vertically in a data matrix
-batch_partition_length = data_length // batch_size
-data_x = np.zeros([batch_size, batch_partition_length], dtype=np.int32)
-data_y = np.zeros([batch_size, batch_partition_length], dtype=np.int32)
-for i in range(batch_size):
-    data_x[i] = raw_x[batch_partition_length * i:batch_partition_length * (i + 1)]
-    data_y[i] = raw_y[batch_partition_length * i:batch_partition_length * (i + 1)]
-# further divide batch partitions into num_steps for truncated backprop
-epoch_size = batch_partition_length // num_steps
+	return batches
 
-out= []
-
-for i in range(epoch_size):
-    x = data_x[:, i * num_steps:(i + 1) * num_steps]
-    y = data_y[:, i * num_steps:(i + 1) * num_steps]
-    out.append((x, y))
-
-
-
+def to_epochs(n, num_data, CONFIG):
+	for k in range(n):
+		yield to_batches(to_data(num_data), CONFIG)
 
 '''
 	The Model with:
@@ -98,7 +90,6 @@ for i in range(epoch_size):
 	h_t = tanh(W (x_t @ h_{t-1}) )
 	P_t = softmax (Uh_t)
 '''
-
 
 ############################################################
 '''
@@ -111,6 +102,15 @@ CONFIG = {'backprop-steps': 5     # truncated backprop
          ,'num-steps'     : 10
          ,'learning-rate' : 0.1}
 
+
+X,Y = to_data(5000)
+
+batch_size = CONFIG['batch-size']
+num_step   = CONFIG['num-steps' ]
+
+x  = tf.placeholder(tf.int32, [batch_size, num_step], name = 'input' )
+x  = tf.placeholder(tf.int32, [batch_size, num_step], name = 'output')
+h0 = tf.zeros([batch_size, num_step])
 
 
 

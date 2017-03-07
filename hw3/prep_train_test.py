@@ -10,7 +10,7 @@ import numpy as np
 '''
 	open assets
 '''
-root = '/Users/lingxiao/Documents/class/dialog-systems/data/hw3'
+root = '/Users/lingxiao/Documents/research/dialogue-systems/data/hw3'
 q    = os.path.join(root,'idx_q.npy')
 a    = os.path.join(root,'idx_a.npy')
 
@@ -37,12 +37,12 @@ out_train_a = os.path.join(root,'train_answer.npy'  )
 out_test_q = os.path.join(root,'test_question.npy')
 out_test_a = os.path.join(root,'test_answer.npy'  )
 
+if False:
+	np.save(out_train_q, train_q)
+	np.save(out_train_a, train_a)
 
-np.save(out_train_q, train_q)
-np.save(out_train_a, train_a)
-
-np.save(out_test_q, test_q)
-np.save(out_test_a, test_a)
+	np.save(out_test_q, test_q)
+	np.save(out_test_a, test_a)
 
 
 # '''
