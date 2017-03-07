@@ -19,6 +19,8 @@ We tested each model with the same set of sentences including some sentences in 
 - Reuslt files:
 	"nltk_107600.txt"
 	"nltk_107600.png" (Just screenshot image)
+: The global perplexity and the buckets' perplexities except the first one decreased as the steps increased, but the first bucket's perplexity decreased at the beginning and increased later. In the results, "unk" appears many times, even for the sentences in the training data.
+
 
 2) Preprocessed with tworkenize.py
 - learning rate: 0.5
@@ -29,6 +31,7 @@ We tested each model with the same set of sentences including some sentences in 
 - Reuslt files:
 	"tworken_128200.txt"
 	"tworken_128200.png" (Just screenshot image)
+: The global perplexity decreased up to 1.11 by the time we stopped training. However, each bucket's perplextiy kept increasing and became very large. Therefore, we trained another model stopping early - the third model. In terms of its result, it works better than the vanila tokenization case. Most of the answers do not completely make sense, but it generates less "unk" and more relevant words.
 
 3) Preprocessed with tworkenize.py & early stopping
 - learning rate: 0.5
@@ -39,8 +42,11 @@ We tested each model with the same set of sentences including some sentences in 
 - Reuslt files:
 	"tworken_earlystopping_27000.txt"
 	"tworken_earlystopping_27000.png" (Just screenshot image)
+: The global perplexity at the stopping point of this model is higher than the one of the previous model. All buckets' perplexities of this model are much lower than the ones of the previous model. In the test results, the model generated "unk" more times than the first model. We didn't evaluated the results with a certain metrics, but this model's result apparently showed the worst performance among the three models.
 
 
 
+## FUTURE WORK ##
 
+Comparing those three different models, we found that good torkenization can improve performance of models. Also, the global perplexity matters more than each bucket's perplexity. Most of the answers in the test of the second model are grammatically not too wrong although we didn't give any grammar information when training. However, we think giving grammar information or using pre-trained, model which is grammatically correct, can improve the performance.
 
