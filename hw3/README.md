@@ -31,7 +31,7 @@ The vocabulary is limited to 6000 characters, all out of vocabulary (OOV) words 
 
 # Model.
 
-We used vanilla seq-to-seq model designed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation, 
+We used vanilla sequence to sequence model with attention mechanism, first proposed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation and is trained to maximize the probabilty of target sequence given input sequence, where the cost is cross entropy.
 
 
 # Experiments.
@@ -42,4 +42,8 @@ We used vanilla seq-to-seq model designed by Cho et al. (https://arxiv.org/pdf/1
 
 
 ## Experiment 2 : tworkenize with _ training episodes (early stopping)
+
+
+# Future Work.
+
 
