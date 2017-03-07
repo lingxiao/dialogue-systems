@@ -179,7 +179,7 @@ Note total perplexity score over all buckets dropped to as far as 1.11. However,
 	"tworken_earlystopping_27000.txt"
 	"tworken_earlystopping_27000.png" (Just screenshot image)
 
-The global perplexity at the stopping point of this model is higher than the one of the previous model. All buckets' perplexities of this model are much lower than the ones of the previous model. In the test results, the model generated "unk" more times than the first model. We didn't evaluated the results with a certain metrics, but this model's result apparently showed the worst performance among the three models.
+Since perplexity is not the best measure of converation cohesiveness, we hypothesized early stopping may yield better results. The global perplexity at the stopping point of this model is higher than the one of the previous model. All buckets' perplexities of this model are much lower than the ones of the previous model. However, this model appear to generate more 'unk' tokens than the previous two models, and qualitatively perform far worse than the others - most of the answers do not make sense.
 
 <pre>
 	> Have a great day
@@ -238,7 +238,12 @@ The global perplexity at the stopping point of this model is higher than the one
 
 ## FUTURE WORK ##
 
-Comparing those three different models, we found that good torkenization can improve performance of models. Also, the global perplexity matters more than each bucket's perplexity. Most of the answers in the test of the second model are grammatically not too wrong although we didn't give any grammar information when training. However, we think giving grammar information or using pre-trained, model which is grammatically correct, can improve the performance.
+We can improve this model in several ways. First, tokenization appear to make a significant difference in quality, since it changes the distribution over words. Thus it may be worthwhile to consider tokenization schemes that are more appropriate for this domain. Next, we observed that global perplexity is a better measure of performance (qualitatively measured by conversing with the bot) than that of each bucket's. More importantly, constructing a better measure of response quality may yield further improvements. 
+
+It is interesting to note that when the model gives answers with english words, the sentences are grammatically correct. Thus the model appeared to have acquired a "language model". However, this may not be a great use of our data since there is very little of it. Thus we wonder if it is possible for a model to acquire a language model by pretraining on non-conversational english corpus, and then fine tune the parameters on a conversational data. 
+
+Finally, seq-to-seq does not keep a history of previous rounds of conversation. In homework 4, we will extend the model by learning to keep a reprentaton of the history of conversation, and training the model on a dataset where such long term correlation exists. 
+
 
 
 
