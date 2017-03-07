@@ -27,7 +27,7 @@ See tworkenize.py for a comprehensive list of tokenization steps.
 
 Finally, we removed any tweet questions-response pairs where the question is longer than 20 tokens, and the question is shorter than 3 tokens or longer than 20 tokens. 
 
-The vocabulary is limited to 6000 characters, all out of vocabulary (OOV) words are mapped to the token 'unk'.
+The vocabulary is limited to 6004 characters, all out of vocabulary (OOV) words are mapped to the token 'unk'.
 
 # MODELS
 We used vanilla sequence to sequence model with attention mechanism, first proposed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation and is trained to maximize the probabilty of target sequence given input sequence, where the cost is cross entropy. The model maps in the input sequence into a hidden vector, where the attention mechanism controls how much hidden information will propogate forward.
@@ -50,7 +50,55 @@ We tested each model with the same set of sentences including some sentences in 
 - Reuslt files:
 	"nltk_107600.txt"
 	"nltk_107600.png" (Just screenshot image)
-: The global perplexity and the buckets' perplexities except the first one decreased as the steps increased, but the first bucket's perplexity decreased at the beginning and increased later. In the results, "unk" appears many times, even for the sentences in the training data.
+: The global perplexity and the buckets' perplexities except the first one decreased as the steps increased, but the first bucket's perplexity decreased at the beginning and increased later. In the results, "unk" appears many times, even for the sentences in the training data. We believe this is due insufficient tokenization. Below is an example from the nltk model.
+
+<pre>
+> Have a great day
+thank you unk
+> It is raining today
+unk on unk
+> Trump got elected as the president of the united states
+unk is the unk unk unk unk
+> It is finally Friday
+its unk unk
+> yeah i'm preparing myself to drop a lot on this man, but definitely need something reliable
+unk unk unk unk unk unk
+> magic's biggest secrets finally revealed on netflix
+unk to get a unk unk
+> just standing up for my friends yo
+unk u unk bro
+> besides if trump say his condolences it won't sound genuine
+so unk so true
+> I am okay with that
+im sorry to unk
+> I love my dad
+fucking fucking unk
+> I love my mom
+whats the unk
+> she is back
+she is unk
+> idk
+unk unk unk
+> idk im just trying to help other people
+i live to unk
+> what's a good place to get free beats?
+its unk to unk
+> let's work
+unk that unk
+> goddamit that degrom image is so good i hope i never lose it
+try here on the unk unk
+> you are so sweet.
+thank you so much
+>
+unk unk unk
+> couldn't help myself
+unk unk unk
+> if i'm being totally honest, i went far out of my way for this one
+i like the same party unk
+> my sister say she ready for me
+lmao yall unk me
+
+</pre>	
 
 
 ## 2) Preprocessed with tworkenize.py
