@@ -1,4 +1,4 @@
-Introduction.
+d# Introduction.
 
 In this project we trained a vanilla seq-to-seq model on the twitter chat log found here:
 https://github.com/suriyadeepan/datasets/tree/master/seq2seq/twitter. 
@@ -6,7 +6,7 @@ https://github.com/suriyadeepan/datasets/tree/master/seq2seq/twitter.
 After tokenization (details below), there were 220754 question-answer pairs, 90% of which was used for training set,
 the remaining 10% is used for test set.
 
-Preprocessing.
+# Preprocessing.
 
 We used two tokenization schemes. The first is nltk's vanilla tokenization scheme, which includes:
 	- lowercase all tokens
