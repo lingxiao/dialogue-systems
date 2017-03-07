@@ -182,12 +182,10 @@ def process_data():
     np.save('idx_a.npy', idx_a)
 
     # let us now save the necessary dictionaries
-    metadata = {
-            'w2idx' : w2idx,
-            'idx2w' : idx2w,
-            'limit' : limit,
-            'freq_dist' : freq_dist
-                }
+    metadata = {'w2idx' : w2idx,
+                'idx2w' : idx2w,
+                'limit' : limit,
+                'freq_dist' : freq_dist}
 
     # write to disk : data control dictionaries
     with open('metadata.pkl', 'wb') as f:
