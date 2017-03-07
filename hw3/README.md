@@ -9,6 +9,7 @@ the remaining 10% is used for test set.
 # Preprocessing.
 
 We used two tokenization schemes. The first is nltk's vanilla tokenization scheme, which includes:
+Markup:
 	* lowercase all tokens
 	* removing all non alphanumeric characters.
 
