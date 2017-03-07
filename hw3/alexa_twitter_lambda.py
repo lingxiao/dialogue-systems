@@ -71,7 +71,18 @@ def echo(slot):
                     "Could you repeat what you said?"
 
     return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
-
+def seq2seq_answers(slot):
+    session_attributes = {}
+    card_title = "Echo"
+    should_end_session = False
+    """
+        A model trained by seq2seq model in tensorflow will be used in here.
+        Input sentence :slot['echo']['value']
+        output sentence -> speech_output
+    """
+    reprompt_text = "I'm sorry." \
+                    "Could you repeat what you said?"
+    return build_response(session_attributes, build_speechlet_response(card_title, speech_output, reprompt_text, should_end_session))
 
 # --------------- Events ------------------
 
