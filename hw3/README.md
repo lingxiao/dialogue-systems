@@ -9,8 +9,10 @@ the remaining 10% is used for test set.
 # Preprocessing.
 
 We used two tokenization schemes. The first is nltk's vanilla tokenization scheme, which includes:
+<pre>
 	- lowercase all tokens
 	- removing all non alphanumeric characters.
+</pre>
 
 Note in the last case if a nonalphanumeric character appears inside of a word, then it is removed from the word. For example. Punctuations are not removed.
 
