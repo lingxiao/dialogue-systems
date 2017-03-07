@@ -1,7 +1,7 @@
 """
 AWS LAMDA FUNCTION FOR TWITTER BOT
 
-Author: Heejin Chloe Jeong, Xiao Ling
+Author: Heejin Chloe Jeong
 Affiliation: University of Pennsylvania
 """
 
