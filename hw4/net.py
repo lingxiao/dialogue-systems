@@ -113,7 +113,7 @@ num_state  = CONFIG['num-state']
 x  = tf.placeholder(tf.int32, [batch_size, num_step], name = 'input' )
 x  = tf.placeholder(tf.int32, [batch_size, num_step], name = 'output')
 h0 = tf.zeros([batch_size, num_step])
-
+ 	
 '''
 	inputs
 '''
@@ -123,10 +123,16 @@ rnn_inputs = tf.unpack(x_one_hot, axis = 1)
 '''
 	network parameters
 '''
-W = tf.Variable('W', [num_class + num_state, num_state])
-b = tf.Variable('b', tf.random_uniform([num_state], -0.1, 0.1))
+def cell (x,h):
+	W = tf.Variable('W', [num_class + num_state, num_state])
+	b = tf.Variable('b', tf.random_uniform([num_state], -0.1, 0.1))
+	y = tf.tanh(tf.matmul(tf.concat([x,h],1), W) + b)
+	return y
 
 
+'''
+	add cells to graph
+'''
 
 
 
