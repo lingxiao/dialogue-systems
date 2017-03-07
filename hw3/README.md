@@ -9,22 +9,19 @@ the remaining 10% is used for test set.
 # Preprocessing.
 
 We used two tokenization schemes. The first is nltk's vanilla tokenization scheme, which includes:
-* Bullet list
- * Nested bullet
-  * Sub-nested bullet etc
-* Bullet list item 2
 
-	* lowercase all tokens
-	* removing all non alphanumeric characters.
+* lowercase all tokens
+* removing all non alphanumeric characters.
 
 Note in the last case if a nonalphanumeric character appears inside of a word, then it is removed from the word. For example. Punctuations are not removed.
 
 
 Next we usedd tworkenize found in tworkenize.py, this include:
-	* stripping white space
-	* removing emojis that do not appear consecutively with no space in between
-	* lower case
-	* split off edge punctuation
+
+* stripping white space
+* removing emojis that do not appear consecutively with no space in between
+* lower case
+* split off edge punctuation
 
 See tworkenize.py for a comprehensive list of tokenization steps. 
 
