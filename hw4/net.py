@@ -24,6 +24,11 @@ from utils import *
 		Pr[Yt = 1 | X_{t-8} = 1] = 0.25
 		Pr[Yt = 1 | X_{t-3} = 1 and X_{t-8} = 1] = 0.75
 
+		questions for joao:
+
+			- truncated back prop?
+			- simpler flat implementation of what's online?
+
 '''
 def to_data(size):
 
@@ -118,7 +123,7 @@ h0 = tf.zeros([batch_size, num_step])
 	inputs
 '''
 x_one_hot  = tf.one_hot(x, CONFIG['num-classes'])
-rnn_inputs = tf.unpack(x_one_hot, axis = 1)
+rnn_inputs = tf.unstack(x_one_hot, axis = 1)
 
 '''
 	network parameters
