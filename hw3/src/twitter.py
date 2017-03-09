@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# @Use: python twitter.py --decode --data_dir /Users/lingxiao/Documents/research/dialogue-systems/hw3/data/tworkenized --train_dir /Users/lingxiao/Documents/research/dialogue-systems/hw3/checkpoints
+# @Use: source ~/tensorflow-0.12./bin/activate
+#       python twitter.py --decode --data_dir /Users/lingxiao/Documents/research/dialogue-systems/hw3/data/tworkenized --train_dir /Users/lingxiao/Documents/research/dialogue-systems/hw3/checkpoints
 #
 # ==============================================================================
 
