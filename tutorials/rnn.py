@@ -53,11 +53,11 @@ y = tf.placeholder('float', [None, n_classes]       )
 
 
 weights = {
-		'out': tf.Variable(tf.random_normal([n_hidden, n_classes]))
+	'out': tf.Variable(tf.random_normal([n_hidden, n_classes]))
 }
 
 biases = {
-		'out': tf.Variable(tf.random_normal([n_classes]))
+	'out': tf.Variable(tf.random_normal([n_classes]))
 }
 
 
@@ -72,10 +72,15 @@ biases = {
 	required shape: n_steps * batch_size * n_input
 '''
 
-x1 = tf.transpose(x , [1,0,2])
-x1 = tf.transpose(x1, [-1, n_input])
+x1 = tf.transpose(x , [1,0,2]    )
+x1 = tf.reshape  (x1,[-1,n_input])
 
 
+'''
+	temp repl
+'''
+# with tf.Session() as repl:
+	# x = np.
 
 
 
