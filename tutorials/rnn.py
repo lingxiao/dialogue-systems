@@ -18,11 +18,13 @@ import app
 from prelude import *
 from utils import *
 
+os.system('clear')
+
 ############################################################
 '''
 	Data
 '''
-mnist = input_data.read_data_sets('/tmp/data', one_hot = True)
+# mnist = input_data.read_data_sets('/tmp/data', one_hot = True)
 
 ############################################################
 '''
@@ -64,6 +66,14 @@ biases = {
 	construct rnn
 '''
 
+'''
+	conform data shape to rnn function requirements
+	X shape       : batch-size * n_steps * n_input
+	required shape: n_steps * batch_size * n_input
+'''
+
+x1 = tf.transpose(x , [1,0,2])
+x1 = tf.transpose(x1, [-1, n_input])
 
 
 
