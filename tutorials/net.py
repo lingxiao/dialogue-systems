@@ -108,20 +108,18 @@ state_size = 4
 learning_rate = 0.1
 
 """
-Placeholders
+	Placeholders
 """
-
 x = tf.placeholder(tf.int32, [batch_size, num_steps], name='input_placeholder')
 y = tf.placeholder(tf.int32, [batch_size, num_steps], name='labels_placeholder')
 init_state = tf.zeros([batch_size, state_size])
 
 """
-RNN Inputs
+	RNN Inputs
 """
-
 # Turn our x placeholder into a list of one-hot tensors:
-# rnn_inputs is a list of num_steps tensors with shape [batch_size, num_classes]
-x_one_hot = tf.one_hot(x, num_classes)
+# rnn_inputs is a list of num_steps tensors with shape [batch_size, num_classes]tfr566ttg f  ggbb                                                                   
+x_one_hot  = tf.one_hot(x, num_classes)
 rnn_inputs = tf.unstack(x_one_hot, axis=1)
 
 """
@@ -143,14 +141,13 @@ def rnn_cell(rnn_input, state):
 state = init_state
 
 rnn_outputs = []
+
 for rnn_input in rnn_inputs:
     state = rnn_cell(rnn_input, state)
     rnn_outputs.append(state)
 final_state = rnn_outputs[-1]
 
 ############################################################
-
-
 
 # CONFIG = {'backprop-steps': 5     # truncated backprop 
 #          ,'batch-size'    : 200
