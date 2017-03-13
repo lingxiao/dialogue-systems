@@ -78,6 +78,33 @@ with tf.Session() as repl:
 	var = tf.global_variables_initializer()
 	repl.run(var)
 
+	'''
+		argmax, argmin
+	'''
+	v1 = tf.argmax(m5,0).eval()
+	print ('>> argmax m5: ' + str(v1[0]))
+	print('\n note argmax output index of maximum value in tensor')
+
+	v2 = tf.argmin(m5,0).eval()
+	print ('\n>> argmin m5: ' + str(v2[0]))
+	print('\n note argmin output index of maximum value in tensor')
+
+	'''
+		reduce_mean x = (sum x)/(len x)
+	''' 
+	v3 = tf.reduce_mean(m2).eval()
+	print('\n>> reduce_mean m2: ' + str(v3))
+
+
+	'''
+		equal
+	'''
+	b1 = tf.equal(tf.argmax(m5,0), tf.argmax(m5,0)).eval()
+	print('\n>> equal (argmax m5 0) (argmax m5 0): ' + str(b1[0]) + '\n')
+
+	b2 = tf.equal(tf.argmax(m5,0), tf.argmin(m5,0)).eval()
+	print('\n>> equal (argmax m5 0) (argmin m5 0): ' + str(b2[0]) + '\n')
+
 	if True:
 
 		'''
