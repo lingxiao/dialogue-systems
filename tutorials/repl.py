@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import os
 import time
+import collections
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import rnn
@@ -162,27 +163,124 @@ with tf.Session() as repl:
 '''
 	REPL session to understand tf.Session.run
 
-	note `run` runs the monad and feeds the output to next 
-	computation
-		ie: run x >>= \a -> ...
-		or: a <- run
-			...
+	`session` creates what is like a monad transformer stack
+	
+	run` runs the session and feeds the output to next computation:
 
-	note tf.constant x is like `return x` or `pure x`
+		ie: run mx >>= \x -> ...
 
-	so Session creates what is like a monad transformer stack
+	run :: fetches x feed_dict x options x meta_data -> fetches
+
+	* fetches can be:
+
+		- single graph element, which can be:
+			* Operation
+			* Tensor
+			* SparseTensor
+			* SparseTensorValue
+			* String denoting name of tensor or operation on graph
+
+		- nested list 
+		- tuple
+		- named tuple
+		- dict
+		- OrdeeredDict with graph elements at leaves
+
+	* feed_dict overides value in the tensor graph, they can be:
+
+		- if the key is a `Tensor`, the value can be:
+			scalar
+			string
+			list
+			ndarray
+
+		- if key is 'Placeholder`, the value can be:
+			whatever the type of the placeholder is
+
+		- if the key is a nested tuple of `Tensors` 
+		  the value should be a nested tuple with sae structre that
+		  maps to their corresponding value as above
+
+	* in reduced syntax, we have for logistic regression:
+
+	-- * graph inputs
+
+	x,y :: Tensor Float32
+	x = tf.placeholder [None, num_px]	   
+	y = tf.placeholder [None, num_classes]
+
+	-- * model
+
+	w, b :: Variable
+	w = tf.variable $ tf.zeros [num_px, num_classes] 
+	b = tf.variable $ tf.zeros [10]                  
+
+	yhat :: Tensor Float32
+	yhat = tf.nn.softmax $ x * w + b
+
+	-- * loss function
+
+	cost :: Operation
+	cost = tf.reduce_mean $ - tf.reduce_sum (Y * log yhat) reduce_idx 
+
+	-- * optimizer
+	opt :: Operation
+	opt = minimize (tf.train.Optimizer rate) cost
+
+	-- * Note run takes in type `Operation` or `[Operation]`
+	sess :: tf.Session
+	sess = do
+		var <- tf.global_variables_initializer() :: Operation
+		run var
+
+		for k in range epochs:
+			xs, ys <- return $ mnist.train.next_batch batch_size
+			_, _   <- run [opt, cost] ({x: xs, y: ys})
+
+
+	-- * an even simpler example:
+	sess :: tf.Session
+	sess = do:
+		a1 <- run a
+		b1 <- run b
+		v  <- run [a,b]
+		w  <- run [a,b] ({a : a1, b: b1})
+
 '''
+# note tf.constant x is like `return x` or `pure x`
 a = tf.constant([10,20]) # :: Tensor
 b = tf.constant([20,30]) # :: Tensor
 
-
 with tf.Session() as s:
 
+	'''
+		run tensor
+	'''
 	a1 = s.run(a)  # :: numpy.ndarray
 	b1 = s.run(b)  # :: numpy.ndarray
 
-	print ('\n>> a1: ', a1, type(a1))
-	print ('\n>> b1: ', b1, type(b1))
+	print ('\n>> a1 = ' + str(a1) + ' :: ' + str(type(a1)))
+	print ('\n>> b1 = ' + str(b1) + ' :: ' + str(type(b1)))
+
+	'''
+		run [tensor]
+	'''
+	v = s.run([a,b])
+	print ('\n>> v = ' +  str(v) + ' :: ' + str(type(v)))
+
+	'''
+		run named tuple
+	'''
+	d = collections.namedtuple('d', ['a','b'])
+	w = s.run({'k1' : d(a,b), 'k2': [b,a]})
+	print ('\n>> w = ' + str(v))
+
+	'''	
+		feed dict
+	'''
+
+
+
 
 
 

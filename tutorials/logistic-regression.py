@@ -36,8 +36,8 @@ learning_rate = 0.01
 epochs        = 25
 batch_size    = 100
 
-num_px      = 28*28
-num_classes = 10
+num_px        = 28*28
+num_classes   = 10
 
 display_step  = 1
 
@@ -66,7 +66,6 @@ cost = tf.reduce_mean(-tf.reduce_sum(Y*tf.log(Yhat), reduction_indices = 1))
 '''
 optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
-
 ############################################################
 '''
 	Training session
@@ -75,7 +74,7 @@ with tf.Session() as sess:
 
 	'''
 		initialize variables
-	'''
+		'''
 	var = tf.global_variables_initializer() # :: operation
 
 	'''
@@ -83,7 +82,7 @@ with tf.Session() as sess:
 
 		run :: fetches x feed_dict x options x meta_data -> fetches
 
-		fetches can be:
+		* fetches can be:
 
 			- single graph element, which can be:
 				* Operation
@@ -97,6 +96,17 @@ with tf.Session() as sess:
 			- named tuple
 			- dict
 			- OrdeeredDict with graph elements at leaves
+
+		* feed_dict overides value in the tensor graph, they can be:
+
+			- if the key is a `Tensor`, the value can be:
+				scalar
+				string
+				list
+				ndarray
+
+			- if key is 'Placeholder`, the value can be:
+				whatever the type of the placeholder is
 
 	'''
 	sess.run(var)
@@ -118,6 +128,12 @@ with tf.Session() as sess:
 	accu     = tf.reduce_mean(tf.cast(corrects, tf.float32))
 
 	print ('\n>> model accuracy: ', accu.eval({X: mnist.test.images, Y: mnist.test.labels}))
+
+	'''
+	'''
+	
+
+
 
 
 
