@@ -118,8 +118,8 @@ def create_model(session, forward_only):
       FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
       forward_only=forward_only)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
-
-  if ckpt and (FLAGS.decode or tf.gfile.Exists(ckpt.model_checkpoint_path)):
+  pdb.set_trace()
+  if ckpt :#and (FLAGS.decode or tf.gfile.Exists(ckpt.model_checkpoint_path)):
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
     model.saver.restore(session, ckpt.model_checkpoint_path)
   else:

@@ -45,7 +45,7 @@ Z = tf.placeholder('float32')
 		perm: dim 0 -> dim 1, dim 1 -> dim 0
 '''
 # m1 :: Tensor
-m1 = tf.transpose(m,[1,0])
+m1 = tf.transpose(m,[1,0])  
 
 '''
 	>> reshape :: Tensor -> Tensor
@@ -72,7 +72,7 @@ ms = zip([m,m1,m2,m3,m4,m5,m6], range(1000))
 
 ############################################################
 '''
-	Main REPL session
+	REPL session to understand basic matrix operations
 '''
 with tf.Session() as repl:
 	var = tf.global_variables_initializer()
@@ -157,6 +157,32 @@ with tf.Session() as repl:
 		print(repl.run(Z, \
 			feed_dict = {Z: [[1,1,1],[1,1,1]]}))
 		print('\n')
+
+############################################################
+'''
+	REPL session to understand tf.Session.run
+
+	note `run` runs the monad and feeds the output to next 
+	computation
+		ie: run x >>= \a -> ...
+		or: a <- run
+			...
+
+	note tf.constant x is like `return x` or `pure x`
+
+	so Session creates what is like a monad transformer stack
+'''
+a = tf.constant([10,20]) # :: Tensor
+b = tf.constant([20,30]) # :: Tensor
+
+
+with tf.Session() as s:
+
+	a1 = s.run(a)  # :: numpy.ndarray
+	b1 = s.run(b)  # :: numpy.ndarray
+
+	print ('\n>> a1: ', a1, type(a1))
+	print ('\n>> b1: ', b1, type(b1))
 
 
 
