@@ -73,6 +73,135 @@ ms = zip([m,m1,m2,m3,m4,m5,m6], range(1000))
 
 ############################################################
 '''
+	REPL session to understand tf.Session.run
+
+	`session` creates what is like a monad transformer stack
+	
+	run` runs the session and feeds the output to next computation:
+
+		ie: run mx >>= \.x -> ...
+
+	run :: fetches x feed_dict x options x meta_data -> fetches
+
+	* fetches can be:
+
+		- single graph element, which can be:
+			* Operation
+			* Tensor
+			* SparseTensor
+			* SparseTensorValue
+			* String denoting name of tensor or operation on graph
+
+		- nested list 
+		- tuple
+		- named tuple
+		- dict
+		- OrdeeredDict with graph elements at leaves
+
+	* feed_dict overides value in the tensor graph, they can be:
+
+		- if the key is a `Tensor`, the value can be:
+			scalar
+			string
+			list
+			ndarray
+
+		- if key is 'Placeholder`, the value can be:
+			whatever the type of the placeholder is
+
+		- if the key is a nested tuple of `Tensors` 
+		  the value should be a nested tuple with sae structre that
+		  maps to their corresponding value as above
+
+	* in reduced syntax, we have for logistic regression:
+
+	-- * graph inputs
+
+	x,y :: Tensor Float32
+	x = tf.placeholder [None, num_px]	   
+	y = tf.placeholder [None, num_classes]
+
+	-- * model
+
+	w, b :: Variable
+	w = tf.variable $ tf.zeros [num_px, num_classes] 
+	b = tf.variable $ tf.zeros [10]                  
+
+	yhat :: Tensor Float32
+	yhat = tf.nn.softmax $ x * w + b
+
+	-- * loss function
+
+	cost :: Operation
+	cost = tf.reduce_mean $ - tf.reduce_sum (Y * log yhat) reduce_idx 
+
+	-- * optimizer
+	opt :: Operation
+	opt = minimize (tf.train.Optimizer rate) cost
+
+	-- * Note run takes in type `Operation` or `[Operation]`
+	sess :: tf.Session
+	sess = do
+		var <- tf.global_variables_initializer() :: Operation
+		run var
+
+		for k in range epochs:
+			xs, ys <- return $ mnist.train.next_batch batch_size
+			_, _   <- run [opt, cost] ({x: xs, y: ys})
+
+
+	-- * an even simpler example:
+	sess :: tf.Session
+	sess = do:
+		a1 <- run a
+		b1 <- run b
+		v  <- run [a,b]
+		w  <- run [a,b] ({a : a1, b: b1})
+
+'''
+# note tf.constant x is like `return x` or `pure x`
+a = tf.constant([10,20]) # :: Tensor
+b = tf.constant([20,30]) # :: Tensor
+z = tf.Variable([100,200]) # :: Variable
+
+with tf.Session() as s:
+
+	var = tf.global_variables_initializer()
+	s.run(var)
+
+	'''
+		run tensor
+	'''
+	a1 = s.run(a)  # :: np.ndarray
+	b1 = s.run(b)  # :: np.ndarray
+	z1 = s.run(z)  # :: np.ndarray
+
+
+	print ('\n>> a1 = ' + str(a1) + ' :: ' + str(type(a1)))
+	print ('\n>> b1 = ' + str(b1) + ' :: ' + str(type(b1)))
+	print ('\n>> z1 = ' + str(z1) + ' :: ' + str(type(z1)))
+
+
+
+	'''
+		run [tensor]
+	'''
+	v = s.run([a,b])
+	print ('\n>> v = ' +  str(v) + ' :: ' + str(type(v)))
+
+	'''
+		run named tuple
+	'''
+	d = collections.namedtuple('d', ['a','b'])
+	w = s.run({'k1' : d(a,b), 'k2': [b,a]})
+	print ('\n>> w = ' + str(v))
+
+	'''	
+		feed dict
+	'''
+
+############################################################
+'''
 	REPL session to understand basic matrix operations
 '''
 with tf.Session() as repl:
@@ -159,129 +288,59 @@ with tf.Session() as repl:
 			feed_dict = {Z: [[1,1,1],[1,1,1]]}))
 		print('\n')
 
+
 ############################################################
 '''
-	REPL session to understand tf.Session.run
-
-	`session` creates what is like a monad transformer stack
-	
-	run` runs the session and feeds the output to next computation:
-
-		ie: run mx >>= \x -> ...
-
-	run :: fetches x feed_dict x options x meta_data -> fetches
-
-	* fetches can be:
-
-		- single graph element, which can be:
-			* Operation
-			* Tensor
-			* SparseTensor
-			* SparseTensorValue
-			* String denoting name of tensor or operation on graph
-
-		- nested list 
-		- tuple
-		- named tuple
-		- dict
-		- OrdeeredDict with graph elements at leaves
-
-	* feed_dict overides value in the tensor graph, they can be:
-
-		- if the key is a `Tensor`, the value can be:
-			scalar
-			string
-			list
-			ndarray
-
-		- if key is 'Placeholder`, the value can be:
-			whatever the type of the placeholder is
-
-		- if the key is a nested tuple of `Tensors` 
-		  the value should be a nested tuple with sae structre that
-		  maps to their corresponding value as above
-
-	* in reduced syntax, we have for logistic regression:
-
-	-- * graph inputs
-
-	x,y :: Tensor Float32
-	x = tf.placeholder [None, num_px]	   
-	y = tf.placeholder [None, num_classes]
-
-	-- * model
-
-	w, b :: Variable
-	w = tf.variable $ tf.zeros [num_px, num_classes] 
-	b = tf.variable $ tf.zeros [10]                  
-
-	yhat :: Tensor Float32
-	yhat = tf.nn.softmax $ x * w + b
-
-	-- * loss function
-
-	cost :: Operation
-	cost = tf.reduce_mean $ - tf.reduce_sum (Y * log yhat) reduce_idx 
-
-	-- * optimizer
-	opt :: Operation
-	opt = minimize (tf.train.Optimizer rate) cost
-
-	-- * Note run takes in type `Operation` or `[Operation]`
-	sess :: tf.Session
-	sess = do
-		var <- tf.global_variables_initializer() :: Operation
-		run var
-
-		for k in range epochs:
-			xs, ys <- return $ mnist.train.next_batch batch_size
-			_, _   <- run [opt, cost] ({x: xs, y: ys})
-
-
-	-- * an even simpler example:
-	sess :: tf.Session
-	sess = do:
-		a1 <- run a
-		b1 <- run b
-		v  <- run [a,b]
-		w  <- run [a,b] ({a : a1, b: b1})
+	tensorflow interactive session playing in inpython
+'''
 
 '''
-# note tf.constant x is like `return x` or `pure x`
-a = tf.constant([10,20]) # :: Tensor
-b = tf.constant([20,30]) # :: Tensor
+	let's start a isession with simple predifined values
+'''
+session = tf.InteractiveSession()
 
-with tf.Session() as s:
+x = tf.Variable([1,2])          # :: Variable
+a = tf.constant([3,3])          # :: Tensor
+w = tf.Variable([[1,0],[0,1]])  # :: Variable
 
-	'''
-		run tensor
-	'''
-	a1 = s.run(a)  # :: numpy.ndarray
-	b1 = s.run(b)  # :: numpy.ndarray
+'''
+	initalize all variables
+'''
+var = tf.global_variables_initializer()
+session.run(var)
 
-	print ('\n>> a1 = ' + str(a1) + ' :: ' + str(type(a1)))
-	print ('\n>> b1 = ' + str(b1) + ' :: ' + str(type(b1)))
+'''
+	note evaluating a and x is like:
 
-	'''
-		run [tensor]
-	'''
-	v = s.run([a,b])
-	print ('\n>> v = ' +  str(v) + ' :: ' + str(type(v)))
+	main = do:
+		va  <- eval a
+		vx  <- eval x
+		vxa <- eval $ x - a
 
-	'''
-		run named tuple
-	'''
-	d = collections.namedtuple('d', ['a','b'])
-	w = s.run({'k1' : d(a,b), 'k2': [b,a]})
-	print ('\n>> w = ' + str(v))
+'''
+print('\n>> eval a: \n')
+va = a.eval()         # :: np.ndarray
+print(va)
 
-	'''	
-		feed dict
-	'''
+print('\n>> eval x: \n')
+print(x.eval())
+
+xa = tf.subtract(x,a)
+print ('\n>> eval $ x - a:\n')
+print(xa.eval())
+
+print('\n>> eval w: \n')
+print(w.eval())
+
+wx = tf.matmul(w,x)
+
+# session.close()
 
 
-
-
+'''
+	now let's start a session with a simple network
+'''
+# sess1 = tf.InteractiveSession()
 
 
 

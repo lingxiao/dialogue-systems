@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 import tensorflow as tf
-from tensorflow.contrib import rnn
 from tensorflow.examples.tutorials.mnist import input_data
 
 import app
@@ -128,6 +127,7 @@ with tf.Session() as sess:
 	for k in range(epochs):
 		xs,ys = mnist.train.next_batch(batch_size)
 		_, _  = sess.run([optimizer, cost], feed_dict={X: xs, Y: ys})
+		# sess.run(optimizer, feed_dict={X : xs, Y: ys})
 		print ('\n>> iter : ' + str(k))
 
 	print('\n>> finished optimization')

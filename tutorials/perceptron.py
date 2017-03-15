@@ -9,11 +9,11 @@ from __future__ import print_function
 import os
 import time
 import numpy as np
-import matplotlib.pyplot as plt
-from PIL import Image
-
 import tensorflow as tf
-from tensorflow.contrib import rnn
+from tensorflow import Variable, Session,  \
+                placeholder, reduce_mean,  \
+                reduce_sum, matmul, random_normal
+
 from tensorflow.examples.tutorials.mnist import input_data
 
 import app
@@ -49,26 +49,93 @@ num_classes = 10
 '''
 	Graph input
 '''
+# x, y :: Tensor Float
+x = placeholder('float', [None, num_px])
+y = placeholder('float', [None, num_classes])
+
+'''
+	network parameters
+'''
+# theta :: Dict String Variable 
+theta = {
+	# 
+	# weights
+	  'h1': Variable(random_normal([num_px , layer_1]))
+	, 'h2': Variable(random_normal([layer_1, layer_2]))
+	, 'h3': Variable(random_normal([layer_2, num_classes]))
+	# 
+	# biases
+	, 'b1': Variable(random_normal([layer_1]))
+	, 'b2': Variable(random_normal([layer_2]))
+	, 'b3': Variable(random_normal([num_classes]))
+}
+
+############################################################
+'''
+	create model
+
+	@Use: Given input tensor x and initial 
+	       network parameters, output prediction
+
+	perceptron :: Tensor Float 
+	           -> Dict String Variable 
+	           -> Tensor Float
+'''
+def perceptron(x, theta):
+
+	# o1, o2, yhat :: Tensor Float
+	o1     = tf.nn.relu(matmul(x , theta['h1']) + theta['b1'])
+	o2     = tf.nn.relu(matmul(o1, theta['h2']) + theta['b1'])
+	yhat   = matmul(o2, theta['h3']) + theta['b3']
+	# yhat   = tf.nn.softmax(yhat)
+	return yhat
+
+y_pred = perceptron(x, theta)
+
+'''
+	loss and optimizer
+	see this for softmax cross entropy with logits:
+		http://stackoverflow.com/questions/34240703/difference-between-tensorflow-tf-nn-softmax-and-tf-nn-softmax-cross-entropy-with
+'''
+# cost, opt :: Operation
+# cost = tf.reduce_mean(-tf.reduce_sum(y*tf.log(y_pred), reduction_indices = 1))
+cost = reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=y_pred, labels=y))
+opt  = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
+
+############################################################
+'''
+	Train model 
+'''
+
+cycles = int(mnist.train.num_examples/batch_size)
+
+with Session() as sess:
+
+	var = tf.global_variables_initializer() 
+	sess.run(var)
+
+	for e in range(epochs):
+
+		for k in range(cycles):
+
+			xs, ys = mnist.train.next_batch(batch_size)
+			_, c   = sess.run([opt, cost], feed_dict={x: xs, y: ys})
+	
+			print ('\n>> cycle ' + str(k) + ' of epoch ' + str(e))
+			print ('\n>> cost: ' + str(c))
+
+	'''
+		Test model
+	'''		
+	# correct_prediction :: Tensor
+	correct_prediction = tf.equal(tf.argmax(y_pred, 1), tf.argmax(y, 1))
+	
+	# accuracy :: Tensor
+	accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+	print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 
 
 
