@@ -79,68 +79,79 @@ optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
 
 ############################################################
 '''
-	Training session
+	Full Training session
 '''
-with tf.Session() as sess:
+def train():
+	with tf.Session() as sess:
 
-	'''
-		initialize variables
 		'''
-	var = tf.global_variables_initializer() # :: operation
+			initialize variables
+			'''
+		var = tf.global_variables_initializer() # :: operation
 
-	'''
-		runs operations and evaluates tensors in `fetches`
+		sess.run(var)
 
-		run :: fetches x feed_dict x options x meta_data -> fetches
+		'''
+			training
+		'''
+		for k in range(epochs):
+			xs,ys = mnist.train.next_batch(batch_size)
+			_, c  = sess.run([optimizer, cost], feed_dict={X: xs, Y: ys})
+			print ('\n>> iter : ' + str(k) + ' with cost ' + str(c))
 
-		* fetches can be:
+			vb = np.ndarray.tolist(b.eval())
 
-			- single graph element, which can be:
-				* Operation
-				* Tensor
-				* SparseTensor
-				* SparseTensorValue
-				* String denoting name of tensor or operation on graph
+			print('\n>> eval b\n: ', vb)
 
-			- nested list 
-			- tuple
-			- named tuple
-			- dict
-			- OrdeeredDict with graph elements at leaves
+		print('\n>> finished optimization')
 
-		* feed_dict overides value in the tensor graph, they can be:
+		'''
+			validating
+		'''
+		corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
+		accu     = tf.reduce_mean(tf.cast(corrects, tf.float32))
 
-			- if the key is a `Tensor`, the value can be:
-				scalar
-				string
-				list
-				ndarray
+		print ('\n>> model accuracy: ', accu.eval({X: mnist.test.images, Y: mnist.test.labels}))
 
-			- if key is 'Placeholder`, the value can be:
-				whatever the type of the placeholder is
-	'''
-	sess.run(var)
 
-	'''
-		training
-	'''
-	for k in range(epochs):
-		xs,ys = mnist.train.next_batch(batch_size)
-		_, _  = sess.run([optimizer, cost], feed_dict={X: xs, Y: ys})
-		# sess.run(optimizer, feed_dict={X : xs, Y: ys})
-		print ('\n>> iter : ' + str(k))
+'''
+	Interactive Training Session
+'''
+# isess :: InteractiveSession 
+isess = tf.InteractiveSession()
 
-	print('\n>> finished optimization')
+# var :: operation
+var = tf.global_variables_initializer()
+isess.run(var)
 
-	'''
-		validating
-	'''
-	corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
-	accu     = tf.reduce_mean(tf.cast(corrects, tf.float32))
+# xs, ys :: np.ndarray
+xs, ys = mnist.train.next_batch(batch_size)
 
-	print ('\n>> model accuracy: ', accu.eval({X: mnist.test.images, Y: mnist.test.labels}))
+# c :: np.Float32
+_,c    = isess.run([optimizer,cost], feed_dict={X: xs, Y: ys})
 
-	
+# w :: List Float
+vw = np.ndarray.tolist(W.eval())
+vb = np.ndarray.tolist(b.eval())
+
+'''
+	Note `Tensor`s cannot be evaled, they can only be run
+	since they are a computation defined at some input
+
+	Variables and constants point to certain values, 
+	so they can be evaluated
+
+'''
+c  = isess.run(cost, feed_dict={X: xs, Y: ys})    # :: np.float32
+vx = isess.run(X   , feed_dict={X: xs})    # :: np.ndarray
+vy = isess.run(Y   , feed_dict={Y: ys})
+
+print('\n>> cost: ' + str(c))
+print('\n>> run X: ', vx[0])
+print('\n>> run Y: ', vy[0])
+
+isess.close()
+		
 
 
 

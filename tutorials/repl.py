@@ -299,9 +299,13 @@ with tf.Session() as repl:
 '''
 session = tf.InteractiveSession()
 
-x = tf.Variable([1,2])          # :: Variable
-a = tf.constant([3,3])          # :: Tensor
-w = tf.Variable([[1,0],[0,1]])  # :: Variable
+x = tf.Variable([1.,2.])    # :: Variable Float32
+a = tf.constant([3.,3.])    # :: Tensor Float32
+
+ 
+X = tf.placeholder(tf.float32,[1,2]) # Tensor Float32
+W = tf.Variable(tf.zeros([2,2])) # :: Variable
+U = tf.Variable([[1.,0.],[0.,1.]]) # :: Variable
 
 '''
 	initalize all variables
@@ -317,6 +321,11 @@ session.run(var)
 		vx  <- eval x
 		vxa <- eval $ x - a
 
+		x1  <- eval $ reshape x 1 2
+		y1  <- x1 * W
+		y2  <- x1 * U
+
+
 '''
 print('\n>> eval a: \n')
 va = a.eval()         # :: np.ndarray
@@ -330,22 +339,23 @@ print ('\n>> eval $ x - a:\n')
 print(xa.eval())
 
 print('\n>> eval w: \n')
-print(w.eval())
+print(W.eval())
 
-wx = tf.matmul(w,x)
+x1 = tf.reshape(x,[1,2])
+print('\n>> x tranposed :' + str(x1.eval()))
+# y1 = tf.matmul(X,W)
 
-# session.close()
+y1 = tf.matmul(x1,W)
+print("\n x' * W: " + str(y1.eval()))
+
+y2 = tf.matmul(x1,U)
+print("\n x' * U: " + str(y2.eval()))
 
 
 '''
-	now let's start a session with a simple network
+	close session when done
 '''
-# sess1 = tf.InteractiveSession()
-
-
-
-
-
+session.close()
 
 
 

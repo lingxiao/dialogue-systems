@@ -55,16 +55,16 @@ display_step = 10
 
 	since each mnist image is 28 * 28, we will
 	read each row one pixel at a time,
-	so theres 28 sequences of 28 time steps for every sample
+	so there's 28 sequences of 28 time steps for every sample
 
 	so each sequence is like a sentence, and each sentence
 	has 28 tokens in it
 
 '''
-n_input   = 28    # MNIST image is 28 x 28 pixels
-n_steps   = 28    # timesteps
-n_hidden  = 28    # hidden embedding dimension
-n_classes = 10    # MNIST classes (digit 0 - 9)
+row     = 28    # MNIST image is 28 x 28 pixels
+col     = 28    # timesteps
+hidden  = 28    # hidden embedding dimension
+classes = 10    # MNIST classes (digit 0 - 9)
 
 ############################################################
 '''
@@ -73,19 +73,16 @@ n_classes = 10    # MNIST classes (digit 0 - 9)
 		output to graph of dimension: _ * 10
 
 '''
-X = tf.placeholder('float', [None, n_steps, n_input])
-Y = tf.placeholder('float', [None, n_classes]       )
+X = tf.placeholder('float', [None, col, row])
+Y = tf.placeholder('float', [None, classes]       )
 
 
 '''
 	Parameters of the network
 '''
-weights = {
-	'out': tf.Variable(tf.random_normal([n_hidden, n_classes]))
-}
-
-biases = {
-	'out': tf.Variable(tf.random_normal([n_classes]))
+theta = {
+	 'W': tf.Variable(tf.random_normal([hidden, classes]))
+	,'b': tf.Variable(tf.random_normal([classes]))
 }
 
 
@@ -93,20 +90,20 @@ biases = {
 '''
 	One step in the rnn
 '''
-def RNN(X, weights, biases):
+def RNN(X, theta):
 
 	'''
 		conform data shape to rnn function requirements
-		X shape       : batch-size * n_steps * n_input
-		required shape: n_steps * batch_size * n_input
+		X shape       : batch-size * col * row
+		required shape: col * batch_size * row
 	'''
 
-	X1 = tf.transpose(X  , [1,0,2]     )
-	X1 = tf.reshape  (X1 , [-1,n_input])
-	Xs = tf.split    (X1 , n_steps, 0  )
+	X1 = tf.transpose(X  , [1,0,2] )
+	X1 = tf.reshape  (X1 , [-1,row])
+	Xs = tf.split    (X1 , col, 0  )
 
 	# define instance of lstm cell
-	lstm_cell = rnn.BasicLSTMCell(n_hidden, forget_bias = 1.0)
+	lstm_cell = rnn.BasicLSTMCell(hidden, forget_bias = 1.0)
 
 	'''
 		get outputs to cell
@@ -128,9 +125,11 @@ def RNN(X, weights, biases):
 	'''
 	outputs, states = rnn.static_rnn(lstm_cell, Xs, dtype=tf.float32)
 
-	return tf.matmul(outputs[-1],weights['out']) + biases['out']
+	yhat = tf.matmul(outputs[-1],theta['W']) + theta['b']
 
-Yhat = RNN(X, weights, biases)
+	return yhat
+
+Yhat = RNN(X, theta)
 
 ############################################################
 '''
@@ -161,13 +160,13 @@ with tf.Session() as sess:
 		'''
 			get x batch and y batch, reshape x for tensorflow
 		'''
-		x, y  = mnist.train.next_batch(batch_size)
-		x     = x.reshape((batch_size, n_steps, n_input))
+		xs, ys = mnist.train.next_batch(batch_size)
+		xs     = xs.reshape((batch_size, col, row))
 
 		'''
 			Training takes place here
 		'''
-		sess.run(optimizer, feed_dict={X: x, Y: y})
+ 		sess.run(optimizer, feed_dict={X: xs, Y: ys})
 
 		'''
 			everything here is for displaying results only
@@ -175,10 +174,10 @@ with tf.Session() as sess:
 		if step % display_step == 0:
 
 			# Calculate batch loss
-			loss = sess.run(cost, feed_dict={X: x, Y: y})
+			loss = sess.run(cost, feed_dict={X: xs, Y: ys})
 
 			# Calculate batch accuracy
-			acc = sess.run(accuracy, feed_dict={X: x, Y: y})
+			acc = sess.run(accuracy, feed_dict={X: xs, Y: ys})
 
 			print("Iter " + str(step*batch_size) + ", Minibatch Loss= " + \
 			"{:.6f}".format(loss) + ", Training Accuracy= " + \
@@ -192,7 +191,7 @@ with tf.Session() as sess:
 	print("\n>>Optimization Finished!")
 
 	test_len = 128
-	test_data = mnist.test.images[:test_len].reshape((-1, n_steps, n_input))
+	test_data = mnist.test.images[:test_len].reshape((-1, col, row))
 	test_label = mnist.test.labels[:test_len]
 
 	print("Testing Accuracy:", \

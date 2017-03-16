@@ -83,10 +83,15 @@ theta = {
 '''
 def perceptron(x, theta):
 
-	# o1, o2, yhat :: Tensor Float
-	o1     = tf.nn.relu(matmul(x , theta['h1']) + theta['b1'])
-	o2     = tf.nn.relu(matmul(o1, theta['h2']) + theta['b1'])
-	yhat   = matmul(o2, theta['h3']) + theta['b3']
+	# h1, h2, yhat :: Tensor Float
+	h1     = tf.nn.relu(matmul(x , theta['h1']) + theta['b1'])
+	h2     = tf.nn.relu(matmul(h1, theta['h2']) + theta['b1'])
+	yhat   = matmul(h2, theta['h3']) + theta['b3']
+
+	'''
+		note if we use out of the box softmax, the we get lots
+		of NaNs 
+	'''
 	# yhat   = tf.nn.softmax(yhat)
 	return yhat
 
@@ -96,6 +101,9 @@ y_pred = perceptron(x, theta)
 	loss and optimizer
 	see this for softmax cross entropy with logits:
 		http://stackoverflow.com/questions/34240703/difference-between-tensorflow-tf-nn-softmax-and-tf-nn-softmax-cross-entropy-with
+
+	Note we cannot do -reduce_sum $ y * log yhat since 
+	computing yhat = softmax(h3 * o2 + b3)  gives us nans
 '''
 # cost, opt :: Operation
 # cost = tf.reduce_mean(-tf.reduce_sum(y*tf.log(y_pred), reduction_indices = 1))

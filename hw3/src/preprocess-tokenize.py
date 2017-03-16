@@ -34,7 +34,6 @@ SETTING = {'maxq'      : 20
           ,'UNK'       : 'unk'
           ,'VOCAB_SIZE': 6000}
 
-
 ############################################################
 '''
 	@Use: Given path to raw twitter file in the form of 
