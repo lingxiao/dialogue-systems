@@ -33,15 +33,20 @@ os.system('clear')
 '''
 root     = os.getcwd()
 data_dir = os.path.join(root, 'data/aclImdb/')
-out_path = os.path.join(root, 'tutorials/output/imdb-w2idx.pkl')
+out_dir  = os.path.join(root, 'tutorials/imdb/output/')
 
 '''
 	Settings 
 '''
-SETTING = {'UNK'       : '<unk>'
-          ,'VOCAB_SIZE': 6000}
+SETTING = {'UNK'             : '<unk>'
+          ,'PAD'             : '_'
+          ,'End-of-Paragraph': '<EOP>'
 
-# w2idx = preprocess_imdb(data_dir, out_path, SETTING)
+          ,'VOCAB_SIZE'      : 6000
+          ,'min-length'      : 5
+          ,'max-length'      : 25}
+
+imdb = Imdb(SETTING, data_dir, out_dir)
 
 ############################################################
 '''
@@ -50,25 +55,79 @@ SETTING = {'UNK'       : '<unk>'
 	training parameters
 '''
 learn_rate   = 0.001
-epochs       = 100000
+train_iters  = 100000
 batch_size   = 128
 display_step = 10
 
+
 '''
 	network parameters
+'''
+n_input   = SETTING['VOCAB_SIZE'] # one hot vector for each word
+n_steps   = SETTING['max-length'] # maximum of 25 words per review
+n_hidden  = 128
+n_classes = 2
 
-	since each mnist image is 28 * 28, we will
-	read each row one pixel at a time,
-	so there's 28 sequences of 28 time steps for every sample
-
-	so each sequence is like a sentence, and each sentence
-	has 28 tokens in it
 
 '''
-row     = 28    # MNIST image is 28 x 28 pixels
-col     = 28    # timesteps
-hidden  = 28    # hidden embedding dimension
-classes = 10    # MNIST classes (digit 0 - 9)
+	graph input
+'''
+X = tf.placeholder(tf.float32, [None, n_input, n_steps])
+Y = tf.placeholder(tf.float32, [None, n_classes]       )
+
+'''
+	network parameters
+'''
+theta = {
+	 'W': tf.Variable(tf.random_normal([n_hidden, n_classes]))
+	,'b': tf.Variable(tf.random_normal([n_classes]))
+}
+
+
+'''
+	@Use: given input X and parameters theta, 
+	      output unormalized response to 
+'''
+def RNN(X, theta):
+	'''
+		conform data shape to rnn function requirements
+		X shape       : batch-size * col * row
+		required shape: col * batch_size * row
+	'''
+	X = tf.reshape  (X  , [-1, n_input])
+	X = tf.split    (X , n_steps, 0   )
+
+	# define instance of lstm cell
+	lstm_cell = rnn.BasicLSTMCell(n_hidden, forget_bias = 1.0)
+
+	outputs, states = rnn.static_rnn(lstm_cell, X, dtype=tf.float32)
+
+	yhat = tf.matmul(outputs[-1],theta['W']) + theta['b']
+
+	return yhat
+
+Yhat = RNN(X, theta)
+
+# '''
+# 	cost function and optimizer
+# '''
+# cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Yhat, labels=Y))
+# opt  = tf.train.AdamOptimizer(learning_rate=learn_rate).minimize(cost)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

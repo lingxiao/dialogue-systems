@@ -11,44 +11,12 @@ import nltk
 import pickle
 import random
 import numpy as np
-
 import tensorflow as tf
-from tensorflow.contrib import rnn
 
 import app
 from prelude import *
 from utils import *
 
-os.system('clear')
-
-
-'''
-	Rough idea, determine Pr[ rating | h_T]
-		- experiment with:
-			* one hot encoding
-			* pretrained word vectors
-'''
-############################################################
-'''
-	Load data
-'''
-root     = os.getcwd()
-data_dir = os.path.join(root, 'data/aclImdb/')
-out_dir  = os.path.join(root, 'tutorials/imdb/output/')
-
-'''
-	Settings 
-'''
-SETTING = {'UNK'             : '<unk>'
-          ,'PAD'             : '_'
-          ,'End-of-Paragraph': '<EOP>'
-
-          ,'VOCAB_SIZE'      : 6000
-          ,'min-length'      : 5
-          ,'max-length'      : 25}
-          # 1000}
-
-# w2idx = preprocess_imdb(data_dir, out_dir, SETTING)
 
 ############################################################
 '''
@@ -70,6 +38,8 @@ class Imdb:
 		test_neg_path  = os.path.join(out_dir, 'test-neg.txt'  )
 		w2idx_path     = os.path.join(out_dir, 'imdb-w2idx.pkl')
 
+		os.system('clear')
+		
 		if  os.path.isfile(train_pos_path) \
 		and os.path.isfile(train_neg_path) \
 		and os.path.isfile(test_pos_path ) \
@@ -93,10 +63,10 @@ class Imdb:
 
 			print('\n>> encoding training and test data')
 
-			train_pos = [(e,1) for e in [encode(SETTING, s) for s in train_pos] if e]
-			train_neg = [(e,0) for e in [encode(SETTING, s) for s in train_neg] if e]
-			test_pos  = [(e,1) for e in [encode(SETTING, s) for s in test_pos ] if e]
-			test_neg  = [(e,0) for e in [encode(SETTING, s) for s in test_neg ] if e]
+			train_pos = [(e,1) for e in [encode(SETTING, w2idx, s) for s in train_pos] if e]
+			train_neg = [(e,0) for e in [encode(SETTING, w2idx, s) for s in train_neg] if e]
+			test_pos  = [(e,1) for e in [encode(SETTING, w2idx, s) for s in test_pos ] if e]
+			test_neg  = [(e,0) for e in [encode(SETTING, w2idx, s) for s in test_neg ] if e]
 
 			print('\n>> there are ' + str(len(train_pos)) + ' positive training reviews conforming to length')
 			print('\n>> there are ' + str(len(train_neg)) + ' negative training reviews conforming to length')
@@ -132,22 +102,12 @@ class Imdb:
 	'''
 		@Use: Given a list of words, encode into indices
 	'''
-	# to_indices :: [String] -> [Int]
-	def to_indices(self, words):
+	# from_words :: [String] -> [Int]
+	def from_words(self, words):
+		return [encode(self.setting, self.w2idx, w) for w in words]
 
-		out = []
-
-		for word in words:
-		
-			if word in self.w2idx:
-				out.append(self.w2idx[word])
-			else:
-				out.append(self.w2idx[self.setting['UNK']])
-
-		return out
-
-	'''	
-		@Use: given a list of indices, output words
+		'''	
+		@Use: given a list of indices, decode into words
 	'''
 	# to_words :: [Int] -> [String]
 	def to_words(self,idxs):
@@ -158,9 +118,12 @@ class Imdb:
 	     	  of training data
 	     	  if we ran out of data, reshuffle
 	     	  and start again
+
+	     	  if one_hot flag is one, then output one hot encoding
+	     	  else output integers
 	'''
-	# train_next_batch :: Int -> ([[Int]],[[Int]])
-	def train_next_batch(self, batch_size):
+	# train_next_batch :: Int -> Bool -> ([[Int]],[[Int]])
+	def train_next_batch(self, batch_size, one_hot=True):
 
 		train = self.train
 		b     = self.train_batch
@@ -174,10 +137,23 @@ class Imdb:
 			return self.train_next_batch(batch_size)
 
 		else:
-			print ('\n>> getting next batch')
-			self.train_batch += batch_size
-			return train[b:b + batch_size]
+			print ('\n>> getting next training batch of ' + str(batch_size))
 
+			xs = train[b:b + batch_size]
+			self.train_batch += batch_size
+
+			if one_hot:
+				return [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
+			else:
+				return xs
+
+
+	'''
+		@Use: Given batch_size, get next batch 
+	     	  of test data
+	     	  if we ran out of data, reshuffle
+	     	  and start again
+	'''
 	# test_next_batch :: Int -> ([[Int]],[[Int]])
 	def test_next_batch(self, batch_size):
 
@@ -193,18 +169,37 @@ class Imdb:
 			return self.test_next_batch(batch_size)
 
 		else:
-			print ('\n>> getting next batch')
-			self.test_batch += batch_size
-			return test[b:b + batch_size]
+			print ('\n>> getting next test batch of ' + str(batch_size))
 
+			xs = test[b:b + batch_size]
+			self.test_batch += batch_size
+
+			if one_hot:
+				return [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
+			else:
+				return xs
 
 ############################################################
+'''
+	@Use: given setting and w2idx mapping word to their
+	      integer encoding, and a word, output 
+	      corresponding index, or 0 if word is OOV
+'''
+def word_to_index(SETTING, w2idx, word):
+	if word in w2idx:
+		return w2idx[word]
+	else:
+		return w2idx[SETTING['UNK']]
+
+
 '''
 	@Use: Given a normalized review of type String
 	      output one hot and padded encoding of review
 '''
-# encode :: String -> Either Bool [[Int]]
-def encode(SETTING, review):
+# encode :: Dict String String
+#        -> Dict String Int -> String
+#        -> Either Bool [[Int]]
+def encode(SETTING, w2idx, review):
 
 	tokens  = review.split(' ')
 
