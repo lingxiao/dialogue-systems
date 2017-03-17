@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 import nltk
 import pickle
+import random
 import numpy as np
 
 import tensorflow as tf
@@ -44,7 +45,7 @@ SETTING = {'UNK'             : '<unk>'
 
           ,'VOCAB_SIZE'      : 6000
           ,'min-length'      : 5
-          ,'max-length'      : 60}
+          ,'max-length'      : 25}
           # 1000}
 
 # w2idx = preprocess_imdb(data_dir, out_dir, SETTING)
@@ -92,18 +93,27 @@ class Imdb:
 
 			print('\n>> encoding training and test data')
 
-			train_pos = [e for e in [encode(SETTING, s) for s in train_pos] if e]
-			train_neg = [e for e in [encode(SETTING, s) for s in train_neg] if e]
-			test_pos  = [e for e in [encode(SETTING, s) for s in test_pos ] if e]
-			test_neg  = [e for e in [encode(SETTING, s) for s in test_neg ] if e]
+			train_pos = [(e,1) for e in [encode(SETTING, s) for s in train_pos] if e]
+			train_neg = [(e,0) for e in [encode(SETTING, s) for s in train_neg] if e]
+			test_pos  = [(e,1) for e in [encode(SETTING, s) for s in test_pos ] if e]
+			test_neg  = [(e,0) for e in [encode(SETTING, s) for s in test_neg ] if e]
 
 			print('\n>> there are ' + str(len(train_pos)) + ' positive training reviews conforming to length')
 			print('\n>> there are ' + str(len(train_neg)) + ' negative training reviews conforming to length')
 			print('\n>> there are ' + str(len(test_pos))  + ' positive test reviews conforming to length'    )
 			print('\n>> there are ' + str(len(test_neg))  + ' negative test reviews conforming to length'    )
 
+			print('\n>> preparing the batches')
 
-			print('\n>> peparing the batches')
+			trains = train_pos + train_neg
+			tests  = test_pos  + test_neg
+
+			for _ in range(10):
+				random.shuffle(trains)
+				random.shuffle(tests )
+
+			self.train = trains
+			self.test  = tests
 
 			self.w2idx     = w2idx
 			self.idx2w     = idx2w
@@ -143,12 +153,50 @@ class Imdb:
 	def to_words(self,idxs):
 		return [self.idx2w[i] for i in idxs]
 
-	# next_batch :: Int -> ([[Int]],[[Int]])
-	def next_batch(batch_size):
-		pass
+	'''
+		@Use: Given batch_size, get next batch 
+	     	  of training data
+	     	  if we ran out of data, reshuffle
+	     	  and start again
+	'''
+	# train_next_batch :: Int -> ([[Int]],[[Int]])
+	def train_next_batch(self, batch_size):
 
-# xs, ys = mnist.train.next_batch(batch_size)
-# words = [idx2w[t] for t in idxs]
+		train = self.train
+		b     = self.train_batch
+
+		if b >= len(train):
+
+			self.train_batch = 0
+			print ('\n>> used all data, reshuffling data')
+			for _ in range(10):
+				random.shuffle(self.train)
+			return self.train_next_batch(batch_size)
+
+		else:
+			print ('\n>> getting next batch')
+			self.train_batch += batch_size
+			return train[b:b + batch_size]
+
+	# test_next_batch :: Int -> ([[Int]],[[Int]])
+	def test_next_batch(self, batch_size):
+
+		test = self.test
+		b    = self.test_batch
+
+		if b >= len(test):
+
+			print ('\n>> used all data, reshuffling data')
+			self.test_batch = 0
+			for _ in range(10):
+				random.shuffle(self.test)
+			return self.test_next_batch(batch_size)
+
+		else:
+			print ('\n>> getting next batch')
+			self.test_batch += batch_size
+			return test[b:b + batch_size]
+
 
 ############################################################
 '''
