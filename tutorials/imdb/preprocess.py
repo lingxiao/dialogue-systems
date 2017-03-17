@@ -9,13 +9,11 @@ import nltk
 import pickle
 import numpy as np
 
-
 import app
 from prelude import *
 from utils import *
 
 
-############################################################
 '''	
 	Top level function:
 
@@ -47,33 +45,13 @@ def preprocess_imdb(data_dir, out_dir, SETTING):
 	'''
 		normalizing text
 	'''
+	print ('\n>> normalizing training text ...')
 	train_pos = [normalize(xs) for xs in train_pos]
 	train_neg = [normalize(xs) for xs in train_neg]
 
+	print ('\n>> normalizing test text ...')
 	test_pos  = [normalize(xs) for xs in test_pos]
 	test_neg  = [normalize(xs) for xs in test_neg]
-
-	'''
-		save results of normalization delimited 
-		by end of paragraph `<EOP>` token
-	'''
-	train_pos_path = os.path.join(out_dir, 'train-pos.txt')
-	train_neg_path = os.path.join(out_dir, 'train-neg.txt')
-	test_pos_path  = os.path.join(out_dir, 'test-pos.txt')
-	test_neg_path  = os.path.join(out_dir, 'test-neg.txt')
-
-	with open(train_pos_path, 'w') as h:
-		h.write('<EOP>'.join(train_pos))
-
-	with open(train_neg_path, 'w') as h:
-		h.write('<EOP>'.join(train_neg))
-
-	with open(test_pos_path, 'w') as h:
-		h.write('<EOP>'.join(test_pos))
-
-	with open(test_pos_path, 'w') as h:
-		h.write('<EOP>'.join(test_neg))
-
 
 	'''
 		construct tokens for word to index
@@ -88,33 +66,36 @@ def preprocess_imdb(data_dir, out_dir, SETTING):
 
 	idx2w, w2idx, dist = index(tokens, SETTING)
 
-	w2idx_path = os.path.join(out_dir, 'imdb-w2idx.pkl')
+	'''
+		save results of normalization delimited 
+		by end of paragraph `<EOP>` token
+	'''
+	print('\n>> saving all results ...')
+
+	train_pos_path = os.path.join(out_dir, 'train-pos.txt')
+	train_neg_path = os.path.join(out_dir, 'train-neg.txt')
+	test_pos_path  = os.path.join(out_dir, 'test-pos.txt')
+	test_neg_path  = os.path.join(out_dir, 'test-neg.txt')
+	w2idx_path     = os.path.join(out_dir, 'imdb-w2idx.pkl')
+
+	eop = SETTING['End-of-Paragraph']
+
+	with open(train_pos_path, 'w') as h:
+		h.write(eop.join(train_pos))
+
+	with open(train_neg_path, 'w') as h:
+		h.write(eop.join(train_neg))
+
+	with open(test_pos_path, 'w') as h:
+		h.write(eop.join(test_pos))
+
+	with open(test_neg	_path, 'w') as h:
+		h.write(eop.join(test_neg))
 
 	with open(w2idx_path, 'wb') as h:
 		pickle.dump(w2idx, h)
 
 	return w2idx
-
-
-# def preprocess_imdb(data_dir, out_path, SETTING):
-
-# 	os.system('clear')
-
-# 	train   = get_data(os.path.join(data_dir, 'train'))
-
-# 	test    = get_data(os.path.join(data_dir, 'test' ))
-
-# 	tokens  =       normalize( train['positive'] ) \
-# 	        + ' ' + normalize( train['negative'] ) \
-# 	        + ' ' + normalize( test ['positive'] ) \
-# 	        + ' ' + normalize( test ['negative'] )
-
-# 	idx2w, w2idx, dist = index(tokens, SETTING)
-
-# 	with open(out_dir, 'wb') as h:
-# 		pickle.dump(w2idx, h)
-
-# 	return w2idx
 
 ############################################################
 '''
@@ -154,7 +135,6 @@ def get_data(data_dir):
 '''
 # normalize :: String -> String
 def normalize(xs):
-	print ('\n>> normalizing text ...')
 	tok = Tokenizer(casefold=True, elim_punct=True)
 	ys  = xs.decode('utf-8')
 	ys  = tok.tokenize(ys)
@@ -198,10 +178,11 @@ def index(tokenized_sentences, SETTING):
 	# get vocabulary of 'vocab_size' most used words
 	vocab = freq_dist.most_common(SETTING['VOCAB_SIZE'])
 	# index2word
-	index2word = ['_'] + [SETTING['UNK']] + [ x[0] for x in vocab ]
+	index2word = [SETTING['PAD']]        \
+	           + [SETTING['UNK']]        \
+	           + [ x[0] for x in vocab ] \
 	# word2index
 	word2index = dict([(w,i) for i,w in enumerate(index2word)] )
 	return index2word, word2index, freq_dist
-
 
 
