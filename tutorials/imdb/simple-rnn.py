@@ -15,8 +15,9 @@ import tensorflow as tf
 from tensorflow.contrib import rnn
 
 import app
-from prelude import *
-from utils   import *
+from prelude   import *
+from utils     import *
+from tutorials import *
 
 os.system('clear')
 
@@ -30,9 +31,10 @@ os.system('clear')
 '''
 	Load data
 '''
-root     = os.getcwd()
-data_dir = os.path.join(root, 'data/aclImdb/')
-out_dir  = os.path.join(root, 'tutorials/imdb/output/')
+root      = os.getcwd()
+data_dir  = os.path.join(root, 'data/aclImdb/')
+out_dir   = os.path.join(root, 'tutorials/imdb/output/')
+model_dir = os.path.join(root, 'tutorials/imdb/model'  )
 
 '''
 	Settings 
@@ -44,7 +46,7 @@ SETTING = {'UNK'             : '<unk>'
           ,'VOCAB_SIZE'      : 6002
           ,'num_classes'     : 2
           ,'min-length'      : 5
-          ,'max-length'      : 50}
+          ,'max-length'      : 6000}
 
 imdb = Imdb(SETTING, data_dir, out_dir)
 
@@ -77,17 +79,24 @@ Y = tf.placeholder(tf.float32, [None, n_classes]       )
 	network parameters
 '''
 # theta :: Dict String Variable
-theta = {
+last_layer = {
 	 'W': tf.Variable(tf.random_normal([n_hidden, n_classes]))
 	,'b': tf.Variable(tf.random_normal([n_classes]))
 }
 
+
+mean_pool = {
+	  'W': tf.Variable(tf.random_normal([n_hidden, n_classes]))
+	 ,'b': tf.Variable(tf.random_normal([n_classes]))
+}	 
+
 '''
 	@Use: given input X and parameters theta, 
-	      output unormalized response to 
+		  output last hidden hT transformed by:
+		  	yhat = W hT + b
 '''
-# RNN :: Tensor -> Dict String Variable -> Tensor
-def RNN(X, theta):
+# RNN :: Tensor -> ([Tensor], [Tensor])
+def RNN(X):
 	'''
 		conform data shape to rnn function requirements
 		X shape       : batch-size * col * row
@@ -100,8 +109,27 @@ def RNN(X, theta):
 	lstm_cell = rnn.BasicLSTMCell(n_hidden, forget_bias = 1.0)
 	# iterate  though the the n_steps
 	outputs, states = rnn.static_rnn(lstm_cell, X, dtype=tf.float32)
-	yhat = tf.matmul(outputs[-1],theta['W']) + theta['b']
 
+	return outputs, states
+
+def from_last_layer(X):
+
+	outputs, states = RNN(X)
+
+	yhat = tf.matmul(outputs[-1], last_layer['W']) + last_layer['b']
+
+	return yhat
+
+'''
+	@Use: given X and input parameter theta, 
+	      output mean pooling of all hidden layers
+'''
+def mean_pooling(X):
+
+	outputs, states = RNN(X)
+
+	mean = tf.reduce_mean(states,0)
+	yhat = tf.matmul(mean, mean_pool['W']) + mean_pool['b']
 	return yhat
 
 
@@ -109,7 +137,8 @@ def RNN(X, theta):
 	cost function and optimizer
 '''
 # Yhat, cost :: Tensor
-Yhat = RNN(X, theta)
+# Yhat = from_last_layer(X)
+Yhat = mean_pooling(X)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Yhat, labels=Y))
 
 # opt :: Operation
@@ -122,6 +151,12 @@ opt   = tf.train.AdamOptimizer(learning_rate=learn_rate).minimize(cost)
 corrects = tf.equal(tf.argmax(Y,1), tf.argmax(Yhat,1))     
 accuracy = tf.reduce_mean(tf.cast(corrects, tf.float32))   
 
+
+'''
+	saving model
+'''
+saver = tf.train.Saver()
+
 with tf.Session() as sess:
 
 	var = tf.global_variables_initializer()
@@ -129,7 +164,7 @@ with tf.Session() as sess:
 
 	step = 1
 
-	for _ in range(100):
+	for _ in range(1):
 
 	# while step * batch_size < train_iters:
 
@@ -141,16 +176,22 @@ with tf.Session() as sess:
 
 		step += 1
 
+
 	'''
-		printing final accuracy
+		save model and printing final accuracy
 	'''
-	print("\n>>Optimization Finished!")
+	save_path = saver.save(sess, os.path.join(model_dir, 'step-'+ str(step)) + '.ckpt')
+
+	print("\n>> Optimization Finished and saving model at " + save_path)
+
+	print("\n>> Computing accuracy on test data")
 
 	corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
 	accuracy = tf.reduce_mean(tf.cast(corrects,'float'))
 	txs, tys = imdb.get_test()
 	vaccu    = accuracy.eval({X: txs, Y: tys})    
-	print ('accuracy : ' + str(vaccu))
+
+	print ('\n>> accuracy : ' + str(vaccu))
 
 
 

@@ -11,7 +11,6 @@ import nltk
 import pickle
 import random
 import numpy as np
-import tensorflow as tf
 
 import app
 from prelude import *
@@ -143,8 +142,7 @@ class Imdb:
 			self.train_batch += batch_size
 
 			if one_hot:
-				# hots = [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
-				hots = [(to_one_hot(SETTING['VOCAB_SIZE'], x), to_one_hot(SETTING['num_classes'], y)) for x,y in xs]
+				hots = [(to_one_hot(self.setting['VOCAB_SIZE'], x), to_one_hot(self.setting['num_classes'], y)) for x,y in xs]
 				return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
 			else:
 				return xs
@@ -177,8 +175,7 @@ class Imdb:
 			self.test_batch += batch_size
 
 			if one_hot:
-				# hots = [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
-				hots = [(to_one_hot(SETTING['VOCAB_SIZE'], x), to_one_hot(SETTING['num_classes'], y)) for x,y in xs]
+				hots = [(to_one_hot(self.setting['VOCAB_SIZE'], x), to_one_hot(self.setting['num_classes'], y)) for x,y in xs]
 				return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
 			else:
 				return xs
@@ -190,7 +187,7 @@ class Imdb:
 	# test :: (np.array (np.array Int), np.array (np.array Int))
 	def get_test(self):
 		ts   = self.test
-		hots = [(to_one_hot(SETTING['VOCAB_SIZE'], x), to_one_hot(SETTING['num_classes'], y)) for x,y in ts]
+		hots = [(to_one_hot(self.setting['VOCAB_SIZE'], x), to_one_hot(self.setting['num_classes'], y)) for x,y in ts]
 		return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
 
 ############################################################
