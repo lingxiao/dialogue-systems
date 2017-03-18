@@ -12,7 +12,6 @@ import pickle
 import random
 import numpy as np
 
-import app
 from prelude import *
 from utils import *
 
