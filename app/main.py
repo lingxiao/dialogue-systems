@@ -178,18 +178,18 @@ with tf.Session() as sess:
 
 		step += 1
 
-
 	if True:
 		'''
 			printing final accuracy
 		'''
-		print("\n>> Optimization Finished!")
+		save_path = saver.save(sess, os.path.join(model_dir, 'model.ckpt'))
+		print("\n>> Optimization Finished! Saving output to " + save_path )
 		print("\n>> Computing accuracy on test data")
 		corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
 		accuracy = tf.reduce_mean(tf.cast(corrects,'float'))
 		txs, tys = imdb.get_test()
 		vaccu    = accuracy.eval({X: txs, Y: tys})    
-		print ('accuracy : ' + str(vaccu))
+		print ('\n>> accuracy : ' + str(vaccu))
 
 
 
