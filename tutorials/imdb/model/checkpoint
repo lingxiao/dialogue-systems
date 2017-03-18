@@ -1,0 +1,2 @@
+model_checkpoint_path: "/Users/lingxiao/Documents/research/dialogue-systems/tutorials/imdb/model/step-2.ckpt"
+all_model_checkpoint_paths: "/Users/lingxiao/Documents/research/dialogue-systems/tutorials/imdb/model/step-2.ckpt"

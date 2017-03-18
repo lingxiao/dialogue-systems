@@ -14,7 +14,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import rnn
 
-import app
 from prelude   import *
 from utils     import *
 from tutorials import *
@@ -46,7 +45,7 @@ SETTING = {'UNK'             : '<unk>'
           ,'VOCAB_SIZE'      : 6002
           ,'num_classes'     : 2
           ,'min-length'      : 5
-          ,'max-length'      : 6000}
+          ,'max-length'      : 50}
 
 imdb = Imdb(SETTING, data_dir, out_dir)
 
@@ -129,7 +128,9 @@ def mean_pooling(X):
 	outputs, states = RNN(X)
 
 	mean = tf.reduce_mean(states,0)
+
 	yhat = tf.matmul(mean, mean_pool['W']) + mean_pool['b']
+
 	return yhat
 
 
@@ -174,24 +175,21 @@ with tf.Session() as sess:
 		print ('\n>> iteration ' + str(step))
 		print ('\n>> cost: ' + str(c))
 
+
 		step += 1
 
 
-	'''
-		save model and printing final accuracy
-	'''
-	save_path = saver.save(sess, os.path.join(model_dir, 'step-'+ str(step)) + '.ckpt')
-
-	print("\n>> Optimization Finished and saving model at " + save_path)
-
-	print("\n>> Computing accuracy on test data")
-
-	corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
-	accuracy = tf.reduce_mean(tf.cast(corrects,'float'))
-	txs, tys = imdb.get_test()
-	vaccu    = accuracy.eval({X: txs, Y: tys})    
-
-	print ('\n>> accuracy : ' + str(vaccu))
+	if True:
+		'''
+			printing final accuracy
+		'''
+		print("\n>> Optimization Finished!")
+		print("\n>> Computing accuracy on test data")
+		corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
+		accuracy = tf.reduce_mean(tf.cast(corrects,'float'))
+		txs, tys = imdb.get_test()
+		vaccu    = accuracy.eval({X: txs, Y: tys})    
+		print ('accuracy : ' + str(vaccu))
 
 
 
