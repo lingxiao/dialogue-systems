@@ -182,7 +182,6 @@ with tf.Session() as s:
 	print ('\n>> z1 = ' + str(z1) + ' :: ' + str(type(z1)))
 
 
-
 	'''
 		run [tensor]
 	'''

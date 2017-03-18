@@ -63,10 +63,10 @@ class Imdb:
 
 			print('\n>> encoding training and test data')
 
-			train_pos = [(e,1) for e in [encode(SETTING, w2idx, s) for s in train_pos] if e]
-			train_neg = [(e,0) for e in [encode(SETTING, w2idx, s) for s in train_neg] if e]
-			test_pos  = [(e,1) for e in [encode(SETTING, w2idx, s) for s in test_pos ] if e]
-			test_neg  = [(e,0) for e in [encode(SETTING, w2idx, s) for s in test_neg ] if e]
+			train_pos = [(e,[1]) for e in [encode(SETTING, w2idx, s) for s in train_pos] if e]
+			train_neg = [(e,[0]) for e in [encode(SETTING, w2idx, s) for s in train_neg] if e]
+			test_pos  = [(e,[1]) for e in [encode(SETTING, w2idx, s) for s in test_pos ] if e]
+			test_neg  = [(e,[0]) for e in [encode(SETTING, w2idx, s) for s in test_neg ] if e]
 
 			print('\n>> there are ' + str(len(train_pos)) + ' positive training reviews conforming to length')
 			print('\n>> there are ' + str(len(train_neg)) + ' negative training reviews conforming to length')
@@ -143,7 +143,9 @@ class Imdb:
 			self.train_batch += batch_size
 
 			if one_hot:
-				return [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
+				# hots = [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
+				hots = [(to_one_hot(SETTING['VOCAB_SIZE'], x), to_one_hot(SETTING['num_classes'], y)) for x,y in xs]
+				return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
 			else:
 				return xs
 
@@ -175,9 +177,21 @@ class Imdb:
 			self.test_batch += batch_size
 
 			if one_hot:
-				return [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
+				# hots = [(tf.one_hot(x,self.setting['VOCAB_SIZE'],1,0), tf.one_hot(y,2,1,0)) for x,y in xs]
+				hots = [(to_one_hot(SETTING['VOCAB_SIZE'], x), to_one_hot(SETTING['num_classes'], y)) for x,y in xs]
+				return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
 			else:
 				return xs
+
+	'''
+		@Use: output all test data as np.array of examples
+		      and list of labels
+	'''
+	# test :: (np.array (np.array Int), np.array (np.array Int))
+	def get_test(self):
+		ts   = self.test
+		hots = [(to_one_hot(SETTING['VOCAB_SIZE'], x), to_one_hot(SETTING['num_classes'], y)) for x,y in ts]
+		return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
 
 ############################################################
 '''
@@ -212,16 +226,26 @@ def encode(SETTING, w2idx, review):
 		idxs    = [word_to_index(SETTING, w2idx, t) for t in tokens]
 		# one_hot = to_one_hot(SETTING, idxs)
 		return idxs
-
-def to_one_hot(SETTING,idxs):
+'''
+	@Use: given dimension of one hot vector `depth`
+	      and a list of `idxs`, each index corresponding
+	      to the value that should be hot in the one-hot vector
+	      output depth x len(idxs) matrix 
+'''
+# to_one_hot :: Int -> [Int] -> np.ndarray (np.ndarray Int)
+def to_one_hot(depth,idxs):
 
 	hots = []
 
 	for i in idxs:
-		col    = [0]*SETTING['VOCAB_SIZE']
+		col    = [0] * depth
 		col[i] = 1
 		hots.append(col)
-	return hots
+
+	if len(hots) == 1:
+		hots = hots[0]
+	# return np.asarray(hots)
+	return np.ndarray.transpose(np.asarray(hots))
 
 ############################################################
 '''	

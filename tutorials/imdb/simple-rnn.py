@@ -16,10 +16,9 @@ from tensorflow.contrib import rnn
 
 import app
 from prelude import *
-from utils import *
+from utils   import *
 
 os.system('clear')
-
 
 '''
 	Rough idea, determine Pr[ rating | h_T]
@@ -42,16 +41,16 @@ SETTING = {'UNK'             : '<unk>'
           ,'PAD'             : '_'
           ,'End-of-Paragraph': '<EOP>'
 
-          ,'VOCAB_SIZE'      : 6000
+          ,'VOCAB_SIZE'      : 6002
+          ,'num_classes'     : 2
           ,'min-length'      : 5
-          ,'max-length'      : 25}
+          ,'max-length'      : 50}
 
 imdb = Imdb(SETTING, data_dir, out_dir)
 
 ############################################################
 '''
 	RNN
-
 	training parameters
 '''
 learn_rate   = 0.001
@@ -59,77 +58,99 @@ train_iters  = 100000
 batch_size   = 128
 display_step = 10
 
-
 '''
 	network parameters
 '''
-n_input   = SETTING['VOCAB_SIZE'] # one hot vector for each word
+n_vocab   = SETTING['VOCAB_SIZE'] # one hot vector for each word
 n_steps   = SETTING['max-length'] # maximum of 25 words per review
+n_classes = SETTING['num_classes']
 n_hidden  = 128
-n_classes = 2
-
 
 '''
 	graph input
 '''
-X = tf.placeholder(tf.float32, [None, n_input, n_steps])
+# X, Y :: Tensor
+X = tf.placeholder(tf.float32, [None, n_vocab, n_steps])
 Y = tf.placeholder(tf.float32, [None, n_classes]       )
 
 '''
 	network parameters
 '''
+# theta :: Dict String Variable
 theta = {
 	 'W': tf.Variable(tf.random_normal([n_hidden, n_classes]))
 	,'b': tf.Variable(tf.random_normal([n_classes]))
 }
 
-
 '''
 	@Use: given input X and parameters theta, 
 	      output unormalized response to 
 '''
+# RNN :: Tensor -> Dict String Variable -> Tensor
 def RNN(X, theta):
 	'''
 		conform data shape to rnn function requirements
 		X shape       : batch-size * col * row
 		required shape: col * batch_size * row
 	'''
-	X = tf.reshape  (X  , [-1, n_input])
+	X = tf.reshape  (X  , [-1, n_vocab])
 	X = tf.split    (X , n_steps, 0   )
 
 	# define instance of lstm cell
 	lstm_cell = rnn.BasicLSTMCell(n_hidden, forget_bias = 1.0)
-
+	# iterate  though the the n_steps
 	outputs, states = rnn.static_rnn(lstm_cell, X, dtype=tf.float32)
-
 	yhat = tf.matmul(outputs[-1],theta['W']) + theta['b']
 
 	return yhat
 
+
+'''
+	cost function and optimizer
+'''
+# Yhat, cost :: Tensor
 Yhat = RNN(X, theta)
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Yhat, labels=Y))
 
-# '''
-# 	cost function and optimizer
-# '''
-# cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Yhat, labels=Y))
-# opt  = tf.train.AdamOptimizer(learning_rate=learn_rate).minimize(cost)
+# opt :: Operation
+opt   = tf.train.AdamOptimizer(learning_rate=learn_rate).minimize(cost)
 
+'''
+	compute accuracy 
+'''
+# corrects, accuracy :: Tensor
+corrects = tf.equal(tf.argmax(Y,1), tf.argmax(Yhat,1))     
+accuracy = tf.reduce_mean(tf.cast(corrects, tf.float32))   
 
+with tf.Session() as sess:
 
+	var = tf.global_variables_initializer()
+	sess.run(var)
 
+	step = 1
 
+	for _ in range(100):
 
+	# while step * batch_size < train_iters:
 
+		xs,ys = imdb.train_next_batch(batch_size)
+		_,c   = sess.run([opt, cost], feed_dict={X: xs, Y: ys})
 
+		print ('\n>> iteration ' + str(step))
+		print ('\n>> cost: ' + str(c))
 
+		step += 1
 
+	'''
+		printing final accuracy
+	'''
+	print("\n>>Optimization Finished!")
 
-
-
-
-
-
-
+	corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
+	accuracy = tf.reduce_mean(tf.cast(corrects,'float'))
+	txs, tys = imdb.get_test()
+	vaccu    = accuracy.eval({X: txs, Y: tys})    
+	print ('accuracy : ' + str(vaccu))
 
 
 
