@@ -33,7 +33,7 @@ os.system('clear')
 root      = os.getcwd()
 data_dir  = os.path.join(root, 'data/aclImdb/')
 out_dir   = os.path.join(root, 'tutorials/imdb/output/')
-model_dir = os.path.join(root, 'tutorials/imdb/model'  )
+model_dir = os.path.join(root, 'tutorials/imdb/checkpoint')
 
 '''
 	Settings 
