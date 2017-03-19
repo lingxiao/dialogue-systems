@@ -1,5 +1,5 @@
 ############################################################
-# Module  : multilayer perceptron
+# Module  : multilayer perceptron with viz
 # Date    : March 14th, 2017
 # Author  : https://github.com/aymericdamien/TensorFlow-Examples
 ############################################################
@@ -21,12 +21,16 @@ from prelude import *
 from utils import *
 
 os.system('clear')
+print('\n>> tf-percptron.py')
 
 ############################################################
 '''
 	Data
 '''
 mnist = input_data.read_data_sets('/tmp/data', one_hot = True)
+
+logs_path = os.path.join( os.getcwd(), 'tutorials/logs')
+
 
 ############################################################
 '''
@@ -88,14 +92,12 @@ def perceptron(x, theta):
 	h2     = tf.nn.relu(matmul(h1, theta['h2']) + theta['b1'])
 	yhat   = matmul(h2, theta['h3']) + theta['b3']
 
-	'''
-		note if we use out of the box softmax, the we get lots
-		of NaNs 
-	'''
-	# yhat   = tf.nn.softmax(yhat)
+
+	tf.summary.histogram('relu1',h1)
+	tf.summary.histogram('relu2',h2)
+
 	return yhat
 
-y_pred = perceptron(x, theta)
 
 '''
 	loss and optimizer
@@ -105,10 +107,45 @@ y_pred = perceptron(x, theta)
 	Note we cannot do -reduce_sum $ y * log yhat since 
 	computing yhat = softmax(h3 * o2 + b3)  gives us nans
 '''
-# cost, opt :: Operation
-# cost = tf.reduce_mean(-tf.reduce_sum(y*tf.log(y_pred), reduction_indices = 1))
-cost = reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=y_pred, labels=y))
-opt  = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
+
+with tf.name_scope('Model'):
+	yhat = perceptron(x, theta)
+
+with tf.name_scope('Cost'):
+	cost = reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=yhat, labels=y))
+
+with tf.name_scope('SGD'):
+	opt  = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
+    # Op to calculate every variable gradient
+	grads = tf.gradients(cost, tf.trainable_variables())
+	grads = list(zip(grads, tf.trainable_variables()))
+	# Op to update all variables according to their gradient
+	# apply_grads = opt.apply_gradients(grads_and_vars=grads)
+
+
+with tf.name_scope('Accuracy'):
+# Accuracy
+	acc = tf.equal(tf.argmax(yhat, 1), tf.argmax(y, 1))
+	acc = tf.reduce_mean(tf.cast(acc, tf.float32))
+
+# Initializing the variables
+init = tf.global_variables_initializer()
+
+# Create a summary to monitor cost tensor
+tf.summary.scalar("cost", cost)
+
+# Create a summary to monitor accuracy tensor
+tf.summary.scalar("accuracy", acc)
+
+# Create summaries to visualize weights
+for var in tf.trainable_variables():
+	tf.summary.histogram(var.name, var)
+
+
+
+# Merge all summaries into a single op
+merged_summary_op = tf.summary.merge_all()
+
 
 ############################################################
 '''
@@ -122,11 +159,13 @@ with Session() as sess:
 	var = tf.global_variables_initializer() 
 	sess.run(var)
 
-	# for e in range(epochs):
-	for e in range(2):
+    # op to write logs to Tensorboard
+	summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
 
+	for e in range(epochs):
+	# for e in range(2):
+		# for k in range(3):
 		for k in range(cycles):
-		# for k in range(cycles):
 
 			xs, ys = mnist.train.next_batch(batch_size)
 			_, c   = sess.run([opt, cost], feed_dict={x: xs, y: ys})
@@ -138,14 +177,16 @@ with Session() as sess:
 		Test model
 	'''		
 	# correct_prediction :: Tensor
-	correct_prediction = tf.equal(tf.argmax(y_pred, 1), tf.argmax(y, 1))
+	correct_prediction = tf.equal(tf.argmax(yhat, 1), tf.argmax(y, 1))
 	
 	# accuracy :: Tensor
-	accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-	print("Accuracy:", accuracy.eval({x: mnist.test.images, y: mnist.test.labels}))
+	print("Accuracy:", acc.eval({x: mnist.test.images, y: mnist.test.labels}))
 
 
- 
+	print("Run the command line:\n" \
+	+ "--> tensorboard --logdir=/tmp/tensorflow_logs " \
+	+ "\nThen open http://0.0.0.0:6006/ into your web browser")
+
 
 
 
