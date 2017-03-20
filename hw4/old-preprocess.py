@@ -15,21 +15,10 @@ from collections import defaultdict
 import prelude
 from utils import *
 
-############################################################
+	############################################################
 '''
-	@Use: Given path to directory containing all phone conversations,
-	      open all files and normalize by:
-	      	- case folding
-	      	- whitespace stripping
-	      	- removing all puncutations
-	      	- removing all meta-information demarked by {...}
-
-	      concactenate all converations into one big conversation
-
-	      output normalied conversations
-
+	preprocess
 '''
-# normalize :: String -> IO (String, String)
 def normalize(data_path):
 	'''
 		@Input : path/to/file-directory containing list of all phone home transcripts
@@ -39,8 +28,7 @@ def normalize(data_path):
 		         where each round = 'A' or 'B'
 
 	'''
-	print('\n >> Scanning for directory for all files in directory ' + data_path)
-
+	print('\n >> Scanning for directory for all files')
 	files  = os.listdir(data_path)
 	paths  = [os.path.join(data_path,f) for f in files]
 	convos = [open(p,'r').read()   for p in paths]
@@ -168,7 +156,7 @@ def save_encoded(root, normalized, encoded):
 
 ############################################################
 '''
-	Subrountines for normalizing text
+	Subrountines
 '''
 def go_normalize(token, rs):
 	'''
@@ -250,10 +238,6 @@ def fold_gesture(token):
 		else:
 			return token
 
-############################################################
-'''
-	Subrountines for encoding and padding text
-'''
 def index(tokenized_sentences, SETTING):
 	'''
 		read list of words, create index to word,
@@ -262,12 +246,9 @@ def index(tokenized_sentences, SETTING):
 	'''
 	freq_dist  = nltk.FreqDist(itertools.chain(*tokenized_sentences))
 
-	vocab      = freq_dist.most_common(SETTING['vocabsize'])
+	vocab      = freq_dist.most_common(SETTING['VOCAB_SIZE'])
 	
-	# index2word
-	index2word = [SETTING['pad']]        \
-	           + [SETTING['unk']]        \
-	           + [ x[0] for x in vocab ] \
+	index2word = ['_'] + [SETTING['UNK']] + [ x[0] for x in sorted(vocab) ]
 
 	word2index = dict([(w,i) for i,w in enumerate(index2word)] )
 
@@ -294,7 +275,6 @@ def zero_pad(qtokenized, atokenized, w2idx):
 		idx_a[i] = np.array(a_indices)
 
 	return idx_q, idx_a
-
 
 def pad_seq(seq, lookup, maxlen, SETTING):
 	'''
