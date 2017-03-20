@@ -25,8 +25,9 @@ os.system('clear')
 	Load data
 '''
 root      = os.getcwd()
-data_dir  = os.path.join(root, 'data/aclImdb/')
-out_dir   = os.path.join(root, 'tutorials/imdb/output/')
-model_dir = os.path.join(root, 'tutorials/imdb/checkpoint')
+data_dir  = os.path.join(root, 'data/normalized.txt')
+
+# out_dir   = os.path.join(root, 'tutorials/imdb/output/')
+# model_dir = os.path.join(root, 'tutorials/imdb/checkpoint')
 
 

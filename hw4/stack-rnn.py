@@ -30,9 +30,7 @@ os.system('clear')
 	Load data
 '''
 root      = os.getcwd()
-data_dir  = os.path.join(root, 'data/aclImdb/')
-out_dir   = os.path.join(root, 'tutorials/imdb/output/')
-model_dir = os.path.join(root, 'tutorials/imdb/checkpoint')
+data_dir  = os.path.join(root, 'data/hw4/')
 
 '''
 	Settings 
@@ -46,7 +44,6 @@ SETTING = {'UNK'             : '<unk>'
           ,'min-length'      : 5
           ,'max-length'      : 50}
 
-# imdb = Imdb(SETTING, data_dir, out_dir)
 
 ############################################################
 '''
@@ -63,7 +60,6 @@ display_step = 10
 '''
 n_vocab   = SETTING['VOCAB_SIZE'] # one hot vector for each word
 n_steps   = SETTING['max-length'] # maximum of 25 words per review
-n_classes = SETTING['num_classes']
 n_hidden  = 128
 
 '''
