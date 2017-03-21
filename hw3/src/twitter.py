@@ -11,6 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# @Use: source ~/tensorflow-0.12./bin/activate
+#       python twitter.py --decode --data_dir /Users/lingxiao/Documents/research/dialogue-systems/hw3/data/tworkenized --train_dir /Users/lingxiao/Documents/research/dialogue-systems/hw3/checkpoints
+#
 # ==============================================================================
 
 """
@@ -114,8 +118,8 @@ def create_model(session, forward_only):
       FLAGS.learning_rate, FLAGS.learning_rate_decay_factor,
       forward_only=forward_only)
   ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
-
-  if ckpt and (FLAGS.decode or tf.gfile.Exists(ckpt.model_checkpoint_path)):
+  pdb.set_trace()
+  if ckpt :#and (FLAGS.decode or tf.gfile.Exists(ckpt.model_checkpoint_path)):
     print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
     model.saver.restore(session, ckpt.model_checkpoint_path)
   else:
@@ -207,18 +211,19 @@ def decode():
     que_vocab = pickle.load(open(os.path.join(FLAGS.data_dir,"w2idx_q"),"rb"))
     ans_vocab = pickle.load(open(os.path.join(FLAGS.data_dir,"w2idx_a"),"rb"))
     # Index Changing here.
-    ans_vocab["_go_"] = 1
+    ans_vocab["_go_"]  = 1
     ans_vocab["_eos_"] = 2
-    que_vocab["."] = 6002
-    ans_vocab["."] = 6002
-    que_vocab["the"] = 6003
-    ans_vocab["the"] = 6003
+    que_vocab["."]     = 6002
+    ans_vocab["."]     = 6002
+    que_vocab["the"]   = 6003
+    ans_vocab["the"]   = 6003
     rev_ans_vocab = {v:k for (k,v) in ans_vocab.items()}
 
     # Decode from standard input.
     sys.stdout.write("> ")
     sys.stdout.flush()
     sentence = sys.stdin.readline()
+
     while sentence:
       # Get token-ids for the input sentence.
       token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), que_vocab)

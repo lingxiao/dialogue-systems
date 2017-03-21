@@ -30,7 +30,7 @@ Finally, we removed any tweet questions-response pairs where the question is lon
 The vocabulary is limited to 6004 characters, all out of vocabulary (OOV) words are mapped to the token 'unk'.
 
 # MODELS
-We used vanilla sequence to sequence model with attention mechanism, first proposed by Cho et al. (https://arxiv.org/pdf/1406.1078.pdf). This model was originally designed for machine translation and is trained to maximize the probabilty of target sequence given input sequence, where the cost is cross entropy. The model maps in the input sequence into a hidden vector, where the attention mechanism controls how much hidden information will propogate forward.
+We used vanilla sequence to sequence model with attention mechanism, following the construction by Vinyals and Kaiser et al. (https://arxiv.org/pdf/1412.7449.pdf). This model was originally designed for machine translation and is trained to maximize the probabilty of target sequence given input sequence, where the cost is cross entropy. The model maps in the input sequence into a hidden vector, where the attention mechanism controls how much hidden information will propogate forward.
 
 We utilized the orginial "translate.py" in the tensorflow repository written for French-English translation. All functions in the original file have been slightly modified for our twitter chatbot. In total, we trained three different models as follow:
 	- preprocessed with nltk's vanilla tokenization scheme

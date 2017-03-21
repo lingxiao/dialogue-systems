@@ -1,7 +1,7 @@
 ############################################################
 # Module  : homework2 - XOR 
 # Date    : January 29th
-# Author  : Xiao Ling  
+# Author  : Xiao Ling  123456numbers
 ############################################################
 
 import tensorflow as tf
