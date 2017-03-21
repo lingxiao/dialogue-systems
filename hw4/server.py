@@ -154,8 +154,8 @@ class Phone:
 			self.train_counter = 0
 
 		if one_hot:
-			hots = [(to_one_hot(self.SETTING['vocab-size'], x),  \
-				     to_one_hot(self.SETTING['vocab-size'], y)) for x,y in bs]
+			hots = [(self.index_to_hot(x), self.index_to_hot(y)) \
+			       for x,y in bs]
 			return np.asarray(hots)
 		else:
 			return bs
