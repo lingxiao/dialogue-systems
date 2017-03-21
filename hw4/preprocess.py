@@ -40,8 +40,8 @@ def preprocessing_convos(SETTING, PATH):
 
 	print ('\n>> normalizing training text ...')
 
-	if 'raw_dir' in PATH:
-		normed  = normalize(PATH['raw_dir'])
+	if 'raw-dir' in PATH:
+		normed  = normalize(PATH['raw-dir'])
 	else:
 		raise NameError('no directory specified for raw data')
 

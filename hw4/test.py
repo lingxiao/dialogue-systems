@@ -92,6 +92,20 @@ phone = Phone(SETTING, PATH)
 q,r = phone.next_train_batch(1)[0]
 a,b = phone.next_test_batch(1)[0]
 
+m = phone
+
+ws = 'hello world'
+ks = m.word_to_index('question', ws)
+bs = m.index_to_hot(ks)
+
+ks1 = m.hot_to_index(bs)
+ws1 = m.index_to_word(ks1)
+
+bs1 = m.word_to_hot('question', ws)
+ws2 = m.hot_to_word(bs1)
+
+
+
 
 
 

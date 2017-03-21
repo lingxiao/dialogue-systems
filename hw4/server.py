@@ -18,12 +18,27 @@ from hw4       import *
 ############################################################
 '''
 	Server for project data
+	@Use: given 
+			* project SETTING with fields:
+				- unk
+				- pad
+				- vocab-size
+			* PATH varible with fields:
+				- w2idx: path to word to index dictionary
+				- idx2w: path to index to word dictionary
+				- normalized: path to normalized .txt file
+				              containing all converstions
+
+		   constructs a server that serves training
+		   and testing batches for validation
 '''
 class Phone:
 
 	def __init__(self, SETTING, PATH):
 
 		to_tuple = lambda xs : (xs[0],xs[1])
+
+		print ('\n>> constructing Phone object')
 
 		print ('\n>> opening assets from: '  + '\n'
 			  + PATH['w2idx'] + '\n'
@@ -57,40 +72,71 @@ class Phone:
 		'''
 		self.train         = train
 		self.val           = val
+
 		self.PATH          = PATH
 		self.SETTING       = SETTING
 		self.w2idx         = w2idx
 		self.idx2w         = idx2w
+		
 		self.train_counter = 0
 		self.val_counter   = 0
 
 		self.train_length   = len(train)
+		self.val_length    = len(val  )
 
-		'''
-		@Use: Given a string, encode into sentence
+
+	'''	
+		@Use: Given rounds:
+				'question' or
+				'answer'
+			  and string
+			  encode into a list of integers where
+			  each integer correspondes to the index of 
+			  the string
 	'''
-	# from_words :: String -> String -> [Int]
-	def from_words(self, rounds, words):
+	# word_to_index :: String -> String -> [Int]
+	def word_to_index(self, rounds, words):
 		if rounds == 'question':
-			return [encode(self.SETTING, self.SETTING['maxq'], self.w2idx, w) for w in words]
+			return encode(self.SETTING, self.SETTING['maxq'], self.w2idx, words)
 		elif rounds == 'response':
-			return [encode(self.SETTING, self.SETTING['maxr'], self.w2idx, w) for w in words]
+			return encode(self.SETTING, self.SETTING['maxr'], self.w2idx, words)
 		else:
 			raise NameError('improper round name ' + rounds)
-
+	
 	'''	
 		@Use: given a list of indices, decode into words
 	'''
-	# to_words :: [Int] -> [String]
-	def to_words(self,idxs):
+	# index_to_words :: [Int] -> [String]
+	def index_to_word(self,idxs):
+
 		return [self.idx2w[i] for i in idxs]
 
-	def one_hot_to_idxs(self, hots):
-		pass
+	def index_to_hot(self, idxs):
+		return to_one_hot(self.SETTING['vocab-size'], idxs)
 
-	def one_hot_to_words(self, hots):
-		pass
+	'''
+		@Use: given nparray of dim:
+			vocab-size x _
+		output index encoding of array in list form
+	'''
+	# hot_to_index :: np.ndarry -> [Int]
+	def hot_to_index(self, hots):
+		return from_one_hot(hots)
 
+
+	'''
+		@Use: given nparray of dim:
+			vocab-size x _
+		output words in string
+	'''
+	# hot_to_word :: np.ndarry -> String
+	def hot_to_word(self, hots):
+		idxs = from_one_hot(hots)
+		return ' '.join(self.idx2w[i] for i in idxs)
+
+	def word_to_hot(self, rounds, words):
+		idxs = self.word_to_index(rounds,words)
+		return self.index_to_hot(idxs)
 
 	def next_train_batch(self, batch_size, one_hot = True):
 
@@ -108,30 +154,32 @@ class Phone:
 			self.train_counter = 0
 
 		if one_hot:
-			hots = [(to_one_hot(self.SETTING['vocab-size'], x), to_one_hot(self.SETTING['vocab-size'], y)) for x,y in bs]
-			return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
+			hots = [(to_one_hot(self.SETTING['vocab-size'], x),  \
+				     to_one_hot(self.SETTING['vocab-size'], y)) for x,y in bs]
+			return np.asarray(hots)
 		else:
 			return bs
 
 
 	def next_test_batch(self, batch_size, one_hot = True):
 
-		end = self.test_counter + batch_size
+		end = self.val_counter + batch_size
 
-		if end <= self.test_length:
+		if end <= self.val_length:
 
-			bs = self.test[self.test_counter : end]
-			self.test_counter += batch_size
+			bs = self.val[self.val_counter : end]
+			self.val_counter += batch_size
 
 		else:
-			bs1 = self.test[self.test_counter:]
-			bs2 = self.test[0:batch_size - len(bs1)]
+			bs1 = self.val[self.val_counter:]
+			bs2 = self.val[0:batch_size - len(bs1)]
 			bs  = bs1 + bs2
-			self.test_counter = 0
+			self.val_counter = 0
 
 		if one_hot:
-			hots = [(to_one_hot(self.SETTING['vocab-size'], x), to_one_hot(self.SETTING['vocab-size'], y)) for x,y in bs]
-			return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
+			hots = [(to_one_hot(self.SETTING['vocab-size'], x),  \
+				     to_one_hot(self.SETTING['vocab-size'], y)) for x,y in bs]
+			return np.asarray(hots)
 		else:
 			return bs
 
@@ -147,8 +195,7 @@ def encode(SETTING, max_len, w2idx, sentence):
 	tokens  = sentence.split(' ')
 	npads   = max_len - len(tokens)
 	tokens  = tokens + [SETTING['pad']] * npads
-	idxs    = [word_to_index(SETTING, w2idx, t) for t in tokens]
-	# one_hot = to_one_hot(SETTING, idxs)
+	idxs    = [wrd_2_idx(SETTING, w2idx, t) for t in tokens]
 	return idxs
 
 '''
@@ -156,7 +203,7 @@ def encode(SETTING, max_len, w2idx, sentence):
 	      integer encoding, and a word, output 
 	      corresponding index, or 0 if word is OOV
 '''
-def word_to_index(SETTING, w2idx, word):
+def wrd_2_idx(SETTING, w2idx, word):
 	if word in w2idx:
 		return w2idx[word]
 	else:
@@ -164,26 +211,25 @@ def word_to_index(SETTING, w2idx, word):
 
 
 '''
-	@Use: given dimension of one hot vector `depth`
+	@Use: given dimension of one hot vector `vocab_size`
 	      and a list of `idxs`, each index corresponding
 	      to the value that should be hot in the one-hot vector
-	      output depth x len(idxs) matrix 
+	      output matrix of shape:
+	      	vocab_size x len(idxs) 
 '''
 # to_one_hot :: Int -> [Int] -> np.ndarray (np.ndarray Int)
-def to_one_hot(depth,idxs):
+def to_one_hot(vocab_size,idxs):
+	return np.ndarray.transpose(np.eye(vocab_size)[idxs])
 
-	hots = []
-
-	for i in idxs:
-		col    = [0] * depth
-		col[i] = 1
-		hots.append(col)
-
-	if len(hots) == 1:
-		hots = hots[0]
-	# return np.asarray(hots)
-	return np.ndarray.transpose(np.asarray(hots))
-
+'''
+	@Use: given an ndarray of dim: vocab_size x len(idxs)
+	      output index encoding 
+'''
+# from_one_hot :: np.ndarray -> [Int]
+def from_one_hot(hots):
+	hots = np.ndarray.tolist(np.ndarray.transpose(hots))
+	idxs = [hot.index(1) for hot in hots]
+	return idxs
 
 
 
