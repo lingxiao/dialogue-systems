@@ -57,8 +57,8 @@ class Phone:
 		responses = [r for t,r in normalized if t == 'response']
 
 		print('\n>> encoding data')
-		b_questions  = [encode(SETTING, SETTING['maxq'], w2idx, s) for s in questions]
-		b_responses  = [encode(SETTING, SETTING['maxr'], w2idx, s) for s in responses]
+		b_questions  = [wrd_2_hot(SETTING, SETTING['maxq'], w2idx, s) for s in questions]
+		b_responses  = [wrd_2_hot(SETTING, SETTING['maxr'], w2idx, s) for s in responses]
 		b_normalized = zip(b_questions, b_responses)
 
 		print ('\n>> holding 20% of the rounds out for validation')
@@ -97,9 +97,9 @@ class Phone:
 	# word_to_index :: String -> String -> [Int]
 	def word_to_index(self, rounds, words):
 		if rounds == 'question':
-			return encode(self.SETTING, self.SETTING['maxq'], self.w2idx, words)
+			return wrd_2_hot(self.SETTING, self.SETTING['maxq'], self.w2idx, words)
 		elif rounds == 'response':
-			return encode(self.SETTING, self.SETTING['maxr'], self.w2idx, words)
+			return wrd_2_hot(self.SETTING, self.SETTING['maxr'], self.w2idx, words)
 		else:
 			raise NameError('improper round name ' + rounds)
 	
@@ -108,7 +108,6 @@ class Phone:
 	'''
 	# index_to_words :: [Int] -> [String]
 	def index_to_word(self,idxs):
-
 		return [self.idx2w[i] for i in idxs]
 
 	def index_to_hot(self, idxs):
@@ -155,11 +154,10 @@ class Phone:
 
 		if one_hot:
 			hots = [(self.index_to_hot(x), self.index_to_hot(y)) \
-			       for x,y in bs]
+			        for x,y in bs]
 			return np.asarray(hots)
 		else:
 			return bs
-
 
 	def next_test_batch(self, batch_size, one_hot = True):
 
@@ -191,7 +189,7 @@ class Phone:
 # encode :: Dict String String
 #        -> Dict String Int -> String
 #        -> Either Bool [[Int]]
-def encode(SETTING, max_len, w2idx, sentence):
+def wrd_2_hot(SETTING, max_len, w2idx, sentence):
 	tokens  = sentence.split(' ')
 	npads   = max_len - len(tokens)
 	tokens  = tokens + [SETTING['pad']] * npads

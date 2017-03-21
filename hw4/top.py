@@ -14,6 +14,9 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.contrib import rnn
 
+# from translate import data_utils
+# from translate import seq2seq_model
+
 from prelude   import *
 from utils     import *
 from hw4       import *
@@ -58,19 +61,16 @@ os.system('clear')
 '''
 
 SETTING = {
-
 			# vocab parameters
 		  'unk'        : '<unk>'
 		, 'pad'        : '_'
 		, 'vocab-size' : 5000
-
 			# maximum question and answer lengths
 			# note this is set very high because
 			# we are trying to learn sequential
 			# dependence in conversation snippets,
 			# so no intermediate responses can be
 			# removed
-
         , 'maxq' : 400
         , 'maxr' : 400}
 
@@ -82,15 +82,33 @@ PATH = {'raw-dir'    : os.path.join(root, 'data/phone-home')
 	   , 'idx2w'     : os.path.join(input_dir, 'idx2w.pkl' )
 	   , 'normalized': os.path.join(input_dir, 'normalized.txt')}
 
+
+
 ############################################################
 '''
 	normalizing text and make batcher
 '''
 # w2idx, idx2w, normed = preprocessing_convos(SETTING, PATH)
-phone = Phone(SETTING, PATH)
+# phone = Phone(SETTING, PATH)
 
 q,r = phone.next_train_batch(1)[0]
-a,b = phone.next_test_batch(1)[0]
+
+'''
+	get basic seq to seq to work on tesla first
+	so you understand the input-output requirements
+'''
+model = seq2seq_model.Seq2SeqModel(
+			  SETTING['vocab-size']                # source vocab size
+			, SETTING['vocab-size']                # target vocab size
+			, [(SETTING['maxq'], SETTING['maxr'])] # buckets
+			, 3                                    # number of layers
+			, 5.0                                  # max gradient norm
+			, 64                                   # batch size
+			, 0.5                                  # learning rate
+			, 0.99                                 # learning rate decay factor
+			, False                                # do not use lstm
+			)
+
 
 
 
