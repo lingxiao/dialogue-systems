@@ -84,7 +84,6 @@ class Phone:
 		self.train_length   = len(train)
 		self.val_length    = len(val  )
 
-
 	'''	
 		@Use: Given rounds:
 				'question' or
@@ -106,12 +105,24 @@ class Phone:
 	'''	
 		@Use: given a list of indices, decode into words
 	'''
-	# index_to_words :: [Int] -> [String]
+	# index_to_words :: [Int] | np.array -> String
 	def index_to_word(self,idxs):
-		return [self.idx2w[i] for i in idxs]
+		if type(idxs) == list:
+			return ' '.join(self.idx2w[i] for i in idxs)
+		elif type(idxs) == np.ndarray:
+			return self.index_to_word(np.ndarray.tolist(idxs))
+		else:
+			raise NameError('improper type for idxs, expected type'
+				'list or type numpy.ndarray, but received type ' + str(type(idxs)))
 
 	def index_to_hot(self, idxs):
-		return to_one_hot(self.SETTING['vocab-size'], idxs)
+		if type(idxs) == list:
+			return to_one_hot(self.SETTING['vocab-size'], idxs)
+		elif type(idxs) == np.ndarray:
+			return self.index_to_hot(np.ndarray.tolist(idxs))
+		else:
+			raise NameError('improper type for idxs, expected type'
+				'list or type numpy.ndarray, but received type ' + str(type(idxs)))
 
 	'''
 		@Use: given nparray of dim:
@@ -121,7 +132,6 @@ class Phone:
 	# hot_to_index :: np.ndarry -> [Int]
 	def hot_to_index(self, hots):
 		return from_one_hot(hots)
-
 
 	'''
 		@Use: given nparray of dim:
@@ -137,7 +147,7 @@ class Phone:
 		idxs = self.word_to_index(rounds,words)
 		return self.index_to_hot(idxs)
 
-	def next_train_batch(self, batch_size, one_hot = True):
+	def next_train_batch(self, batch_size, one_hot = False):
 
 		end = self.train_counter + batch_size
 
@@ -157,9 +167,11 @@ class Phone:
 			        for x,y in bs]
 			return np.asarray(hots)
 		else:
-			return bs
+			questions = [np.array(q) for q,_ in bs]
+			responses = [np.array(r) for _,r in bs]
+			return np.array(questions), np.array(responses)
 
-	def next_test_batch(self, batch_size, one_hot = True):
+	def next_test_batch(self, batch_size, one_hot = False):
 
 		end = self.val_counter + batch_size
 
@@ -179,7 +191,22 @@ class Phone:
 				     to_one_hot(self.SETTING['vocab-size'], y)) for x,y in bs]
 			return np.asarray(hots)
 		else:
-			return bs
+			questions = [np.array(q) for q in bs]
+			responses = [np.array(r) for r in bs]
+			return np.array(questions), np.array(responses)
+
+	def get_train(self):
+		bs = self.train
+		questions = [np.array(q) for q,_ in bs]
+		responses = [np.array(r) for _,r in bs]
+		return np.array(questions), np.array(responses)
+
+	def get_test(self, bs):
+		bs = self.test
+		questions = [np.array(q) for q,_ in bs]
+		responses = [np.array(r) for _,r in bs]
+		return np.array(questions), np.array(responses)
+
 
 ############################################################
 '''

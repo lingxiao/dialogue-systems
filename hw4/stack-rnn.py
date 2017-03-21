@@ -132,59 +132,58 @@ def mean_pooling(X):
 '''
 	cost function and optimizer
 '''
-# # Yhat, cost :: Tensor
-# # Yhat = from_last_layer(X)
-# Yhat = mean_pooling(X)
-# cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Yhat, labels=Y))
+# Yhat, cost :: Tensor
+# Yhat = from_last_layer(X)
+Yhat = mean_pooling(X)
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=Yhat, labels=Y))
 
-# # opt :: Operation
-# opt   = tf.train.AdamOptimizer(learning_rate=learn_rate).minimize(cost)
+# opt :: Operation
+opt   = tf.train.AdamOptimizer(learning_rate=learn_rate).minimize(cost)
 
-# '''
-# 	compute accuracy 
-# '''
-# # corrects, accuracy :: Tensor
-# corrects = tf.equal(tf.argmax(Y,1), tf.argmax(Yhat,1))     
-# accuracy = tf.reduce_mean(tf.cast(corrects, tf.float32))   
-
-
-# '''
-# 	saving model
-# '''
-# saver = tf.train.Saver()
-
-# with tf.Session() as sess:
-
-# 	var = tf.global_variables_initializer()
-# 	sess.run(var)
-
-# 	step = 1
-
-# 	for _ in range(1):
-
-# 	# while step * batch_size < train_iters:
-
-# 		xs,ys = imdb.train_next_batch(batch_size)
-# 		_,c   = sess.run([opt, cost], feed_dict={X: xs, Y: ys})
-
-# 		print ('\n>> iteration ' + str(step))
-# 		print ('\n>> cost: ' + str(c))
+'''
+	compute accuracy 
+'''
+# corrects, accuracy :: Tensor
+corrects = tf.equal(tf.argmax(Y,1), tf.argmax(Yhat,1))     
+accuracy = tf.reduce_mean(tf.cast(corrects, tf.float32))   
 
 
-# 		step += 1
+'''
+	saving model
+'''
+saver = tf.train.Saver()
+
+with tf.Session() as sess:
+
+	var = tf.global_variables_initializer()
+	sess.run(var)
+
+	step = 1
+
+	for _ in range(1):
+
+	# while step * batch_size < train_iters:
+
+		xs,ys = imdb.train_next_batch(batch_size)
+		_,c   = sess.run([opt, cost], feed_dict={X: xs, Y: ys})
+
+		print ('\n>> iteration ' + str(step))
+		print ('\n>> cost: ' + str(c))
 
 
-# 	if True:
-# 		'''
-# 			printing final accuracy
-# 		'''
-# 		print("\n>> Optimization Finished!")
-# 		print("\n>> Computing accuracy on test data")
-# 		corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
-# 		accuracy = tf.reduce_mean(tf.cast(corrects,'float'))
-# 		txs, tys = imdb.get_test()
-# 		vaccu    = accuracy.eval({X: txs, Y: tys})    
-# 		print ('accuracy : ' + str(vaccu))
+		step += 1
+
+	if True:
+		'''
+			printing final accuracy
+		'''
+		print("\n>> Optimization Finished!")
+		print("\n>> Computing accuracy on test data")
+		corrects = tf.equal(tf.argmax(Yhat,1), tf.argmax(Y,1))
+		accuracy = tf.reduce_mean(tf.cast(corrects,'float'))
+		txs, tys = imdb.get_test()
+		vaccu    = accuracy.eval({X: txs, Y: tys})    
+		print ('accuracy : ' + str(vaccu))
 
 
 
