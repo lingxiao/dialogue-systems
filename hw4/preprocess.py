@@ -45,19 +45,30 @@ def preprocessing_convos(SETTING, PATH):
 	else:
 		raise NameError('no directory specified for raw data')
 
-	print('\n>> purning conversations so that all question-response pairs '
+	print('\n>> pruning conversations so that all question-response pairs '
 		'conform to length restrictons')
 
 	question = [xs.split(' ') for t,xs in normed if t == 'question']
 	response = [xs.split(' ') for t,xs in normed if t == 'response']
 
-	short_pairs = [(q,r) for q,r in zip(question, response) if   \
-	              len(q) <= SETTING['maxq'] and \
-	              len(r) <= SETTING['maxr']     ]
+	print('\n>> maximum raw question length is ' + str(max(len(q) for q in question)))
+	print('\n>> maximum raw response length is ' + str(max(len(r) for r in response)))
+
+	short_pairs = []
+
+	for q,r in zip(question, response):
+		if len(q) <= SETTING['maxq'] and len(r) <= SETTING['maxr']:
+			short_pairs.append((q,r))		
+		else:
+			print('\n>> removing question-response pairs: \n')
+			print('question: ' + ' '.join(q) + '\n')
+			print('response: ' + ' '.join(r) + '\n')
+
 
 	'''
 		construct tokens for word to index
 	'''
+	print ('\n>> building idx2w w2idx dictionary ...')
 	tokenized_sentences = ' '.join(join(q + r for q,r in short_pairs))
 	idx2w, w2idx, dist = index(tokenized_sentences, SETTING)
 
@@ -248,7 +259,6 @@ def fold_gesture(token):
 #       -> (Dict String Int, Dict String Int, nltk.Probability.FreqDist)
 def index(tokenized_sentences, SETTING):
 
-	print ('\n>> building idx2w w2idx dictionary ...')
 
 	tokenized_sentences = [[w] for w in tokenized_sentences.split(' ')]
 

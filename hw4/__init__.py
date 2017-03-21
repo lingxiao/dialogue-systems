@@ -5,6 +5,8 @@ from .server     import *
 __all__ = [ 
 		    'preprocessing_convos'
 		  , 'Phone'
+
+		  , 'normalize'
 		  # preprocess
             # 'normalize'
 
