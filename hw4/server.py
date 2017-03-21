@@ -11,79 +11,14 @@ import nltk
 import pickle
 import numpy as np
 
-import tensorflow as tf
-from tensorflow.contrib import rnn
-
 from prelude   import *
 from utils     import *
 from hw4       import *
 
-os.system('clear')
-'''
-	problem: right now the model is 
-	kind of opaque to you how it works
-
-	solution: really understand the seq2seq code?
-
-	so you have a q,a pair.
-	now you need to encode the q into a hidden
-	vector until <EOS>, then generate 
-	tokens for response function.
-
-	you need to genenrate each token in response
-	conditioned on the previous token, hidden state
-	and latent conversation vector c
-
-	so instead of :
-
-	Pr[r_1, .. r_t | h_q]	
-
-	we have:
-
-	Pr[r_1, ... r_t, | h_q, c]
-
-	where c is updated after each exchange
-	according to some function
-
-	so each batch should present a n-round
-	consecutive conversation snippet sampled
-	at random.
-
-	this batch should be encode already
-	maybe you can encode this live.
-'''
 ############################################################
 '''
-	Project config and paths
+	Server for project data
 '''
-
-SETTING = {
-		# vocab parameters
-		  'unk'        : '<unk>'
-		, 'pad'        : '_'
-		, 'vocab-size' : 5000
-		# maximum question and answer lengths
-        , 'maxq' : 20
-        , 'minq' : 0
-        , 'maxr' : 20
-        , 'minr' : 3}
-
-
-root      = os.getcwd()
-raw_dir   = os.path.join(root, 'data/phone-home')
-input_dir = os.path.join(root, 'data/hw4/input')
-
-PATH = {'raw_dir'    : os.path.join(root, 'data/phone-home')
-       , 'w2idx'     : os.path.join(input_dir, 'w2idx.pkl')
-	   , 'idx2w'     : os.path.join(input_dir, 'idx2w.pkl')
-	   , 'normalized': os.path.join(input_dir, 'normalized.txt')}
-
-############################################################
-'''
-	normalizing text and make batcher
-'''
-w2idx, idx2w, normed = preprocessing_convos(SETTING, PATH)
-
 class Phone:
 
 	def __init__(self, SETTING, PATH):
@@ -199,10 +134,6 @@ class Phone:
 			return np.asarray([x for x,_ in hots]), np.asarray([y for _,y in hots])
 		else:
 			return bs
-
-
-phone = Phone(SETTING, PATH)
-
 
 ############################################################
 '''
