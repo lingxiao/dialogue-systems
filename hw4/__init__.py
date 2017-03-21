@@ -1,8 +1,20 @@
 from .preprocess import *
-from .net        import *
+from .server     import *
 
-__all__ = [ 'normalize'
-          , 'encode'
-          , 'save_encoded']
+
+__all__ = [ 
+		    'preprocessing_convos'
+		  , 'Phone'
+
+		  , 'normalize'
+		  # preprocess
+            # 'normalize'
+
+          # , 'encode'
+          # , 'save_encoded'
+          # , 'index'
+          # , 'zero_pad'
+          # , 'pad_seq'
+          ]
 
  

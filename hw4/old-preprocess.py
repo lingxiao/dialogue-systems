@@ -15,93 +15,9 @@ from collections import defaultdict
 import prelude
 from utils import *
 
-############################################################
+	############################################################
 '''
-	top level routine to preprocess converation:
-
-	@Use: Given:
-			- application settings
-			- application paths
-
-	      * open all files and normalize by:
-	      	- case folding
-	      	- whitespace stripping
-	      	- removing all puncutations
-	      	- removing all meta-information demarked by {...}
-
-	      * strip all conversations longer than allowed length
-
-	      * construct w2idx and idx2w dictionaries
-
-	      * save normalized text, and dictionaries
-'''
-
-def preprocessing_convos(SETTING, PATH):
-
-	print ('\n>> normalizing training text ...')
-
-	if 'raw-dir' in PATH:
-		normed  = normalize(PATH['raw-dir'])
-	else:
-		raise NameError('no directory specified for raw data')
-
-	print('\n>> pruning conversations so that all question-response pairs '
-		'conform to length restrictons')
-
-	question = [xs.split(' ') for t,xs in normed if t == 'question']
-	response = [xs.split(' ') for t,xs in normed if t == 'response']
-
-	print('\n>> maximum raw question length is ' + str(max(len(q) for q in question)))
-	print('\n>> maximum raw response length is ' + str(max(len(r) for r in response)))
-
-	short_pairs = []
-
-	for q,r in zip(question, response):
-		if len(q) <= SETTING['maxq'] and len(r) <= SETTING['maxr']:
-			short_pairs.append((q,r))		
-		else:
-			print('\n>> removing question-response pairs: \n')
-			print('question: ' + ' '.join(q) + '\n')
-			print('response: ' + ' '.join(r) + '\n')
-
-
-	'''
-		construct tokens for word to index
-	'''
-	print ('\n>> building idx2w w2idx dictionary ...')
-	tokenized_sentences = ' '.join(join(q + r for q,r in short_pairs))
-	idx2w, w2idx, dist = index(tokenized_sentences, SETTING)
-
-	'''
-		save output
-	'''
-	print('\n>> saving all results ...')
-
-	if 'normalized' in PATH:
-
-		with open(PATH['normalized'], 'w') as h:
-			for t,xs in normed:
-				h.write(t + ': ' + xs + '\n')
-	else:
-		print('\n>> error: no path defined for normalized text')
-
-	if 'w2idx' in PATH:
-		with open(PATH['w2idx'], 'wb') as h:
-			pickle.dump(w2idx, h)
-	else:
-		print('\n>> error: no path defined for w2idx')
-
-	if 'idx2w' in PATH:
-		with open(PATH['idx2w'], 'wb') as h:
-			pickle.dump(idx2w, h)
-	else:
-		print('\n>> error: no path defined for idx2w')
-
-	return w2idx, idx2w, normed
-
-############################################################
-'''
-	Subrountines for normalizing text
+	preprocess
 '''
 def normalize(data_path):
 	'''
@@ -118,6 +34,7 @@ def normalize(data_path):
 	convos = [open(p,'r').read()   for p in paths]
 	convos = [rs.split('\n') for rs in convos    ]
 	convos = [[r for r in rs if r] for rs in convos]
+
 
 	print('\n >> concactenating all consecutive speaker rounds')
 	'''                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
@@ -163,6 +80,84 @@ def normalize(data_path):
 
 	return norm
 
+def encode(data, SETTING):
+	'''
+		@Input : list of question-response tuples with
+		@Output: question and response in numpy.ndarray form
+				 zero padded
+				 idx2w list of words
+				 w2dix dict mapping word to index
+	'''
+
+	print ('\n >> filtering for long responses and questions')
+	'''
+		split into questions and answers 
+		and filter by conforming to max and min length
+	'''
+	question = [xs.split(' ') for t,xs in data if t == 'question']
+	response = [xs.split(' ') for t,xs in data if t == 'response']
+
+	short_pairs = [(q,r) for q,r in zip(question,response) if \
+	              len(q) <= SETTING['maxq'] and               \
+	              len(r) <= SETTING['maxr']                   ]
+
+	question = [ q for q,_ in short_pairs ]
+	response = [ r for _,r in short_pairs ]
+
+	'''
+		indexing -> idx2w, w2idx : en/ta
+	'''
+	print('\n >> Index words')
+	idx2w, w2idx, freq_dist = index( question + response, SETTING)
+
+	print('\n >> Zero Padding')
+	idx_q, idx_r = zero_pad( question, response, w2idx)
+
+	return {'idx_q': idx_q \
+	       ,'idx_r': idx_r \
+	       ,'idx2w': idx2w \
+	       ,'w2idx': w2idx}
+
+def save_encoded(root, normalized, encoded):
+
+	idx_q = encoded['idx_q']
+	idx_r = encoded['idx_r']
+	idx2w = encoded['idx2w'] 
+	w2idx = encoded['w2idx']
+
+	'''
+		path
+	'''	
+	norm_path    = os.path.join(root, 'normalized.txt')
+	q_path       = os.path.join(root, 'idx_q.npy'     )
+	r_path       = os.path.join(root, 'idx_r.npy'     )
+	meta_path    = os.path.join(root, 'metadata.pkl'  )
+	w2idx_q_path = os.path.join(root, 'w2idx_q' )
+	w2idx_r_path = os.path.join(root, 'w2idx_r' )
+
+	'''
+		save all 
+	'''
+	hn = open(norm_path, 'w')
+
+	for t,xs in normalized:
+		hn.write(t + ': ' + xs + '\n')
+	hn.close()
+
+	np.save(q_path, idx_q)
+	np.save(r_path, idx_r)
+
+	metadata = {'w2idx' : w2idx,
+		        'idx2w' : idx2w}
+
+	# write to disk : data control dictionaries
+	with open(meta_path, 'wb') as f:
+	    pickle.dump(metadata, f)
+
+############################################################
+'''
+	Subrountines
+'''
 def go_normalize(token, rs):
 	'''
 		@Input: instance of tworkenizer `token`
@@ -243,39 +238,58 @@ def fold_gesture(token):
 		else:
 			return token
 
-############################################################
-'''
-	Subrountines for encoding and padding text
-
-	@Use: given a list of tokens and settings with key:
-			unk
-			pad
-			vocab-size
-		 return word to index
-
-'''
-# index :: String 
-#       -> Dict String Int 
-#       -> (Dict String Int, Dict String Int, nltk.Probability.FreqDist)
 def index(tokenized_sentences, SETTING):
+	'''
+		read list of words, create index to word,
+		word to index dictionaries
+		return tuple( vocab->(word, count), idx2w, w2idx )
+	'''
+	freq_dist  = nltk.FreqDist(itertools.chain(*tokenized_sentences))
 
+	vocab      = freq_dist.most_common(SETTING['VOCAB_SIZE'])
+	
+	index2word = ['_'] + [SETTING['UNK']] + [ x[0] for x in sorted(vocab) ]
 
-	tokenized_sentences = [[w] for w in tokenized_sentences.split(' ')]
-
-	# get frequency distribution
-	freq_dist = nltk.FreqDist(itertools.chain(*tokenized_sentences))
-	# get vocabulary of 'vocab_size' most used words
-	vocab = freq_dist.most_common(SETTING['vocab-size'])
-	# index2word
-	index2word = [SETTING['pad']]        \
-	           + [SETTING['unk']]        \
-	           + [ x[0] for x in vocab ] \
-	# word2index
-	word2index = dict([(w,i) for i,w in enumerate(index2word)])
-	index2word = dict((v,k) for k,v in word2index.iteritems() )
+	word2index = dict([(w,i) for i,w in enumerate(index2word)] )
 
 	return index2word, word2index, freq_dist
 
+def zero_pad(qtokenized, atokenized, w2idx):
+	'''
+		 create the final dataset : 
+			- convert list of items to arrays of indices
+			- add zero padding
+		    return ( [array_en([indices]), array_ta([indices]) )
+	 
+	'''
+	data_len = len(qtokenized)
+
+	idx_q = np.zeros([data_len, SETTING['maxq']], dtype=np.int32) 
+	idx_a = np.zeros([data_len, SETTING['maxr']], dtype=np.int32)
+
+	for i in range(data_len):
+		q_indices = pad_seq(qtokenized[i], w2idx, SETTING['maxq'],SETTING)
+		a_indices = pad_seq(atokenized[i], w2idx, SETTING['maxr'],SETTING)
+
+		idx_q[i] = np.array(q_indices)
+		idx_a[i] = np.array(a_indices)
+
+	return idx_q, idx_a
+
+def pad_seq(seq, lookup, maxlen, SETTING):
+	'''
+	 replace words with indices in a sequence
+	  replace with unknown if word not in lookup
+	    return [list of indices]
+
+	'''
+	indices = []
+	for word in seq:
+	    if word in lookup:
+	        indices.append(lookup[word])
+	    else:
+	        indices.append(lookup[SETTING['UNK']])
+	return indices + [0]*(maxlen - len(seq))
 
 
 
